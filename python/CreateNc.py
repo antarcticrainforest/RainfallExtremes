@@ -119,10 +119,11 @@ class NCreate(nc):
         data = np.ma.masked_array(np.split(data, int(24 / hours))).mean(axis=1)
         isfile = np.array(np.split(isfile, int(24 / hours))).sum(axis=1) * 100.
         times = np.array(np.split(times, int(24 / hours)))
-        size = self.dimensions['time-%ih'%hours].size
-        self.variables['rain_rate-%ih'%hours][size:, :] = data
-        self.variables['ispresent-%ih'%hours][size:] = isfile / times.shape[1]
-        self.variables['time-%ih'%hours][size:] = times[:,0]
+        size = self['%ih'%hours].dimensions['time'].size
+        self['%ih'%hours].variables['rain_rate'][size:, :] = data
+        self['%ih'%hours].variables['rain_rate-flip'][...,size:] = data.transpose(1,2,0)
+        self['%ih'%hours].variables['ispresent'][size:] = isfile / times.shape[1]
+        self['%ih'%hours].variables['time'][size:] = times[:,0]
 
         return data, size
 
@@ -144,41 +145,50 @@ class NCreate(nc):
         self.createVariable('lat', 'f', ('lat', ))
         for avgtype in [None]+times:
             if isinstance(avgtype, int):
-                add_var, time_avg = '-%ih'%avgtype, '%2i hly' %avgtype
+                group_name = '%ih'%avgtype
                 present_unit = '%'
             else:
-                add_var, time_avg = '', '10 Min'
+                group_name = '10min'
                 present_unit = 'bool'
+            group = self.createGroup(group_name)
+            group.createDimension('time', None)
+            group.createVariable('time', 'i', ('time', ))
 
-            self.createDimension('time%s'%add_var, None)
-            self.createVariable('time%s'%add_var, 'i', ('time%s'%add_var, ))
-            self.createVariable('rain_rate%s'%add_var, 'f',
-                                ('time%s'%add_var, 'lat', 'lon'), fill_value=meta['missing'],
-                                zlib=True, complevel=9, least_significant_digit=4,
-                                chunksizes=chunks_shape)
+            group.variables['time'].units = meta['units']
+            group.variables['time'].axis = 'T'
+            group.variables['time'].long_name = 'time'
+            group.variables['time'].calendar = 'Standard'
+            group.variables['time'].short_name = 't'
+            group.variables['time'].standard_name = 'time'
 
-            self.variables['time%s'%add_var].units = meta['units']
-            self.variables['time%s'%add_var].axis = 'T'
-            self.variables['time%s'%add_var].long_name = 'time'
-            self.variables['time%s'%add_var].calendar = 'Standard'
-            self.variables['time%s'%add_var].short_name = 't'
-            self.variables['time%s'%add_var].standard_name = 'time'
+            for i, d in (('rain_rate', ('time','lat','lon')),
+                          'rain_rate-flip',('lat','lon','time')):
+                group.createVariable(i, 'f', d,
+                                     fill_value=meta['missing'], zlib=True,
+                                     complevel=9, least_significant_digit=4,
+                                     chunksizes=chunks_shape)
+                group.variables[i].units = 'mm/h'
+                group.variables[i].standard_name = 'rain_rate'
+                group.variables[i].short_name = 'rr'
+                group.variables[i].long_name = 'Rain Rate '
+                group.variables[i].missing_value = meta['missing']
 
-            self.variables['rain_rate%s'%add_var].units = 'mm/h'
-            self.variables['rain_rate%s'%add_var].standard_name = '%s rain_rate' %time_avg
-            self.variables['rain_rate%s'%add_var].short_name = 'rr'
-            self.variables['rain_rate%s'%add_var].long_name = '%s Rain Rate '%time_avg
-            self.variables['rain_rate%s'%add_var].missing_value = meta['missing']
+            group.createVariable('ispresent', 'f', ('time', ))
+            group.variables['ispresent'].long_name = 'Present time steps'
+            group.variables['ispresent'].short_name = 'present'
+            group.variables['ispresent'].standard_name = 'present timesteps'
+            group.variables['ispresent'].units = present_unit
+            if avgtype in (None, 1, 3):
+                group.createVariable('contours', 'i', ('time', 'lat', 'lon'),
+                                     fill_value=meta['missing'], zlib=True, complevel=9,
+                                     least_significant_digit=2, chunksizes=chunks_shape)
+                group.variables['contours'].units = ' '
+                group.variables['contours'].standard_name = 'contours'
+                group.variables['contours'].short_name = 'cnt'
+                group.variables['contours'].long_name = 'Contours of rainfall areas'
+                group.variables['contours'].missing_value = meta['missing']
 
-            self.createVariable('ispresent%s'%add_var, 'f', ('time%s'%add_var, ))
-            self.variables['ispresent%s'%add_var].long_name = 'Present time steps (%s)'%time_avg
-            self.variables['ispresent%s'%add_var].short_name = '%s present'%time_avg
-            self.variables['ispresent%s'%add_var].standard_name = 'present time step %s'%time_avg
-            self.variables['ispresent%s'%add_var].units = present_unit
 
-        self.createVariable('contours', 'i', ('time', 'lat', 'lon'),
-                            fill_value=meta['missing'], zlib=True, complevel=9,
-                            least_significant_digit=2, chunksizes=chunks_shape)
 
         self.variables['lon'][:] = lon
         self.variables['lon'].units = 'degrees_east'
@@ -192,23 +202,70 @@ class NCreate(nc):
         self.variables['lat'].standard_name = 'latitude'
         self.variables['lat'].short_name = 'lat'
         self.variables['lat'][:] = lat
+    @staticmethod
+    def getSplit(length, maxn = 2**8):
+        from functools import reduce
+        ''' Ruturn the optimal chunk value for an array '''
+        n = np.array(reduce(list.__add__,
+                            ([i, length//i] for i in range(1, int(pow(length, 0.5) + 1)) if length % i == 0)))
+        n.sort()
+        return n[np.fabs(n-maxn).argmin()]
 
-        self.variables['contours'].units = ' '
-        self.variables['contours'].standard_name = 'contours'
-        self.variables['contours'].short_name = 'cnt'
-        self.variables['contours'].long_name = 'Contours of rainfall areas'
-        self.variables['contours'].missing_value = meta['missing']
+    def transpose_var(self, varname, group=None, dims=('lat', 'lon', 'time')):
+        '''
+        Method to copy an existing netCDF variable in reverse order
 
+        Arguments:
+            varname : name of the variable
 
-        for i in ('1h', '3h'):
-            self.createVariable('contours-%s'%i, 'i', ('time-%s'%i, 'lat', 'lon'),
-                                fill_value=meta['missing'], zlib=True, complevel=9,
-                                least_significant_digit=2, chunksizes=chunks_shape)
-            self.variables['contours-%s'%i].units = ' '
-            self.variables['contours-%s'%i].standard_name = 'contours %sly'%i
-            self.variables['contours-%s'%i].short_name = 'cnt %sly'%i
-            self.variables['contours-%s'%i].long_name = '%sly Contours of rainfall areas'
-            self.variables['contours-%s'%i].missing_value = meta['missing']
+        Keywords:
+            group : optional group where the variable is stored (default None)
+            dims : the desired shape of the output variable
+
+        Returns:
+
+        '''
+        if isinstance(group, type(None)):
+            group = self
+        else:
+            group = self[group]
+
+        ncvar = group.variables[varname]
+
+        sys.stdout.flush()
+        sys.stdout.write('\rFlipping dimensions to %s of %s ... done  '%(dims, varname))
+        sys.stdout.flush()
+
+        dim1 = list(dims)
+        dim2 = list(ncvar.dimensions)
+        dim1.sort(), dim2.sort()
+        if dim1 != dim2:
+            raise RuntimeError('Dimensions names of variables must be identical')
+        #Get the dimension of the variable
+        reorder = tuple(ncvar.dimensions.index(i) for i in dims)
+        chunks = [ncvar.chunking()[i] for i in reorder]
+
+        #Now create the new variable
+        try:
+            group.createVariable(varname+'-flip',ncvar.dtype, dims, zlib=True,
+                                 complevel=9, chunksizes=chunks, fill_value=ncvar.missing_value,
+                                 least_significant_digit=ncvar.least_significant_digit)
+        except (RuntimeError, IndexError, AttributeError):
+            pass
+        for attr in ncvar.ncattrs():
+            if 'fillvalue' not in attr.lower():
+                setattr(group.variables[varname+'-flip'], attr, getattr(ncvar,attr))
+
+        split = getSplit(ncvar.shape[0], )
+        index = list(range(0,ncvar.shape[0]+split,split))
+        for i in range(len(index)-1):
+            sys.stdout.write('\rFlipping dimensions to %s of %s ... %3i%%'%(dims, varname, float(i)*100/len(index) ))
+            sys.stdout.flush()
+            group.variables[varname+'-flip'][...,index[i]:index[i+1]] = ncvar[index[i]:index[i+1]].transpose(reorder)
+        sys.stdout.write('\rFlipping dimensions to %s of %s ... done  '%(dims,varname))
+        sys.stdout.flush()
+        sys.stdout.write('\n')
+
 
 
 def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
@@ -253,10 +310,11 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
                 if tt == 0:
                     size = 0
                 else:
-                    size = fnc.dimensions['time'].size
-                fnc.variables['time'][size:] = source.variables['time'][:]
-                fnc.variables['rain_rate'][size:, :] = rain_rate
-                fnc.variables['ispresent'][size:] = source.variables['isfile'][:]
+                    size = fnc['10min'].dimensions['time'].size
+                fnc['10min'].variables['time'][size:] = source.variables['time'][:]
+                fnc['10min'].variables['rain_rate'][size:, :] = rain_rate
+                fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
+                fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
                 for hour in timeavg:
                     data, hsize = fnc.create_avg(rain_rate,source.variables['isfile'][:],
                                            source.variables['time'][:], hour)
@@ -264,14 +322,18 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
                         contours = np.zeros_like(data)
                         for i in range(len(data)):
                             contours[i] = get_countours(np.ma.masked_less(data[i], 2))
-                        fnc.variables['contours-%ih'%hour][hsize:, :] = np.ma.masked_equal(contours,0)
+                        fnc['%ih'%hour].variables['contours'][hsize:, :]\
+                                = np.ma.masked_equal(contours,0)
 
                 contours = np.zeros_like(rain_rate)
                 for i in range(len(rain_rate)):
                     contours[i] = get_countours(np.ma.masked_less(rain_rate[i], 2))
 
-                fnc.variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
+                fnc['10min'].variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
             sys.stdout.write('ok\n')
+        #Create a copy of all rain-rate variables (lat,lon,time) order
+        #for i in ('10min','1h','3h','6h','24'):
+        #    fnc.transpose_var('rain_rate', group=i)
 
 if __name__ == '__main__':
 
