@@ -272,7 +272,6 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
 
                 fnc.variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
             sys.stdout.write('ok\n')
-            sys.exit()
 
 if __name__ == '__main__':
 
