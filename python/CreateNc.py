@@ -303,8 +303,8 @@ def concate(r, isf, prev_r, prev_isf):
     Concat data array
     '''
 
-    return np.ma.masked_invalid(np.concatenate((prev_r, r))[:-len(prev_r)]),\
-            np.concatenate((prev_isf, isf))[:-len(prev_isf)]
+    return np.ma.masked_invalid(np.ma.concatenate((prev_r, r))[:-len(prev_r)]),\
+            np.ma.concatenate((prev_isf, isf))[:-len(prev_isf)]
 def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
@@ -333,7 +333,7 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
         meta['size'] = fnc.dimensions['time'].size
     if not isinstance(type(maskfile),type(None)):
         with nc(maskfile) as fnc:
-            mask = fnc.variables['mask_ring'][:]
+            mask = np.ma.masked_invalid(fnc.variables['mask_ring'][:])
     else:
         mask = np.ones([len(lat), len(lon)])
     varname = 'radar_estimated_rain_rate'
@@ -341,8 +341,7 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
         fnc.create_rain(lat, lon, list(timeavg), meta)
         for tt, fname in enumerate(files):
             with nc(fname) as source:
-                sys.stdout.flush()
-                sys.stdout.write('Adding %s ... '%(os.path.basename(fname)))
+                sys.stdout.write('\rAdding %s ... '%(os.path.basename(fname)))
                 sys.stdout.flush()
 
                 rain_rate =  np.ma.masked_invalid(mask * np.ma.masked_less(
@@ -372,8 +371,9 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
                     contours[i] = get_countours(np.ma.masked_less(rain_rate[i], 2))
 
                 fnc['10min'].variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
-            sys.stdout.write('ok\n')
-            sys.exit()
+            sys.stdout.write('\rAdding %s ... ok'%(os.path.basename(fname)))
+            sys.stdout.flush()
+        sys.stdout.write('\n')
         #Create a copy of all rain-rate variables (lat,lon,time) order
         #for i in ('10min','1h','3h','6h','24'):
         #    fnc.transpose_var('rain_rate', group=i)
@@ -383,7 +383,7 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
-    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','cpol_ring_mask.nc')
+    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','cpol_mask_ring.nc')
     datadir = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
          datetime.strptime(ending, '%Y%m%d'), maskfile, os.path.join(datadir, 'CPOL.nc'))
