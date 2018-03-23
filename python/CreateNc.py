@@ -1,4 +1,4 @@
-import os,sys
+import os, sys, re
 import numpy as np
 from datetime import datetime, timedelta
 from scipy.ndimage import gaussian_filter as bl
@@ -161,12 +161,16 @@ class NCreate(nc):
             group.variables['time'].short_name = 't'
             group.variables['time'].standard_name = 'time'
 
-            for i, d in (('rain_rate', ('time','lat','lon')),
-                          'rain_rate-flip',('lat','lon','time')):
+            for i, d in (('rain_rate', ('time', 'lat', 'lon')),
+                          ('rain_rate-flip', ('lat', 'lon', 'time'))):
+                if i == 'rain_rate':
+                    ch = chunks_shape
+                else:
+                    ch = (chunks_shape[1],chunks_shape[2],chunks_shape[0])
                 group.createVariable(i, 'f', d,
-                                     fill_value=meta['missing'], zlib=True,
+                                     fill_value=meta['missing'], zlib=False,
                                      complevel=9, least_significant_digit=4,
-                                     chunksizes=chunks_shape)
+                                     chunksizes=ch)
                 group.variables[i].units = 'mm/h'
                 group.variables[i].standard_name = 'rain_rate'
                 group.variables[i].short_name = 'rr'
@@ -180,7 +184,7 @@ class NCreate(nc):
             group.variables['ispresent'].units = present_unit
             if avgtype in (None, 1, 3):
                 group.createVariable('contours', 'i', ('time', 'lat', 'lon'),
-                                     fill_value=meta['missing'], zlib=True, complevel=9,
+                                     fill_value=meta['missing'], zlib=False, complevel=9,
                                      least_significant_digit=2, chunksizes=chunks_shape)
                 group.variables['contours'].units = ' '
                 group.variables['contours'].standard_name = 'contours'
@@ -247,7 +251,7 @@ class NCreate(nc):
 
         #Now create the new variable
         try:
-            group.createVariable(varname+'-flip',ncvar.dtype, dims, zlib=True,
+            group.createVariable(varname+'-flip',ncvar.dtype, dims, zlib=False,
                                  complevel=9, chunksizes=chunks, fill_value=ncvar.missing_value,
                                  least_significant_digit=ncvar.least_significant_digit)
         except (RuntimeError, IndexError, AttributeError):
@@ -265,10 +269,43 @@ class NCreate(nc):
         sys.stdout.write('\rFlipping dimensions to %s of %s ... done  '%(dims,varname))
         sys.stdout.flush()
         sys.stdout.write('\n')
+def get_prev(f1, varname, mask, hour):
+    '''
+        Get data from the previous time-step if present, if not just return mask
+        values
 
+        Arguments:
+            f1 : The filename of the current file
+            varname : variable name of the rainfall data
+            mask : mask that is applied to the data
+            hour : hourly avg
+    '''
+    dirname = os.path.dirname(f1)
+    fname = os.path.basename(f1)
+    date = re.findall(r'\d{8}', fname)[0]
+    previous = datetime.strptime(date,'%Y%m%d') - timedelta(seconds=(hour*60**2)/2)
+    if previous.month == 12 and previous.day == 31:
+        dirname = dirname.replace(str(previous.year+1), str(previous.year))
+    previous_file = os.path.join(dirname, fname.replace(date,previous.strftime('%Y%m%d')))
 
+    length = int(hour*60/2 / 10)
+    if os.path.isfile(previous_file):
+        with nc(previous_file) as gnc:
+            rr = gnc.variables[varname][-length:]
+            rr = np.ma.masked_invalid(mask*np.ma.masked_less(rr, 0.1).filled(0))
+            ifile = gnc.variables['isfile'][-length:]
+    else:
+        rr = np.ma.masked_less(np.zeros([length, mask.shape[0], mask.shape[0]]), 1)
+        ifile = np.zeros([length])
+    return (ifile, rr)
+def concate(r, isf, prev_r, prev_isf):
+    '''
+    Concat data array
+    '''
 
-def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
+    return np.ma.masked_invalid(np.concatenate((prev_r, r))[:-len(prev_r)]),\
+            np.concatenate((prev_isf, isf))[:-len(prev_isf)]
+def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
     in a netcdf-file where all the data is stored. It also calculates 1, 3, 6 and
@@ -278,6 +315,7 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
         datafoler (str)  : the parent directory where the data is stored
         first (datetime) : first month of the data (YYYYMM)
         last  (datetime) : last month of the data (YYYYMM)
+        maskfile         : Additional mask applied to the data
         out (st)         : The filname of the output data
     Keywords:
         timeavg (list)   : list containing averaging periods
@@ -293,8 +331,12 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
         meta['units'] = fnc.variables['time'].units
         meta['missing'] = -9999.0
         meta['size'] = fnc.dimensions['time'].size
-
-
+    if not isinstance(type(maskfile),type(None)):
+        with nc(maskfile) as fnc:
+            mask = fnc.variables['mask_ring'][:]
+    else:
+        mask = np.ones([len(lat), len(lon)])
+    varname = 'radar_estimated_rain_rate'
     with NCreate(out, 'w', dist_format='NETCDF4', disk_format='HDF5') as fnc:
         fnc.create_rain(lat, lon, list(timeavg), meta)
         for tt, fname in enumerate(files):
@@ -303,10 +345,8 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
                 sys.stdout.write('Adding %s ... '%(os.path.basename(fname)))
                 sys.stdout.flush()
 
-                try:
-                     rain_rate =  np.ma.masked_invalid(source.variables['radar_estimated_rain_rate'][:].filled(0))
-                except AttributeError:
-                     rain_rate = np.ma.masked_invalid(source.variables['radar_estimated_rain_rate'][:])
+                rain_rate =  np.ma.masked_invalid(mask * np.ma.masked_less(
+                                                  source.variables[varname][:],0.1).filled(0))
                 if tt == 0:
                     size = 0
                 else:
@@ -316,8 +356,10 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
                 fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
                 fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
                 for hour in timeavg:
-                    data, hsize = fnc.create_avg(rain_rate,source.variables['isfile'][:],
-                                           source.variables['time'][:], hour)
+                    prev_isfile, prev_rr = get_prev(fname, varname, mask, hour)
+                    rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
+                    data, hsize = fnc.create_avg(rr, isfile, source.variables['time'][:],
+                                                 hour)
                     if hour in (1,3):
                         contours = np.zeros_like(data)
                         for i in range(len(data)):
@@ -331,6 +373,7 @@ def main(datafolder, first, last, out, timeavg=(1, 3, 6, 24)):
 
                 fnc['10min'].variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
             sys.stdout.write('ok\n')
+            sys.exit()
         #Create a copy of all rain-rate variables (lat,lon,time) order
         #for i in ('10min','1h','3h','6h','24'):
         #    fnc.transpose_var('rain_rate', group=i)
@@ -340,6 +383,7 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
+    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','cpol_ring_mask.nc')
     datadir = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
-         datetime.strptime(ending, '%Y%m%d'), os.path.join(datadir, 'CPOL.nc'))
+         datetime.strptime(ending, '%Y%m%d'), maskfile, os.path.join(datadir, 'CPOL.nc'))
