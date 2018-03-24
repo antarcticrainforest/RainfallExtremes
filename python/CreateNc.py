@@ -127,7 +127,7 @@ class NCreate(nc):
 
         return data, size
 
-    def create_rain(self, lat, lon, times, meta):
+    def create_rain(self, lat, lon, times, meta, mask, twp):
         '''
         Create all important variables like rain-rate, lon, lat and time
         Arguments:
@@ -136,6 +136,8 @@ class NCreate(nc):
             times : tuple containing int's marking average periods (in hours)
             meta : dict with information about additional info
                     (size of the time vector per day, time units, missing_values)
+            mask : mask that represents the cpol disk
+            twp  : mask that represents the twp area
 
         '''
         chunks_shape = (meta['size'], len(lon), len(lat))
@@ -143,6 +145,13 @@ class NCreate(nc):
         self.createDimension('lat', len(lat))
         self.createVariable('lon', 'f', ('lon', ))
         self.createVariable('lat', 'f', ('lat', ))
+        self.createVariable('cpol','f', ('lat', 'lon'))
+        self.createVariable('twp','f', ('lat', 'lon'))
+        for i, name in ((twp, 'twp'), (cpol, 'cpol')):
+            self.variables[name][:] = i
+            self.variables[name].units = '[ ]'
+            self.variables[name].long_name = 'Mask for %s area'%name.upper()
+
         for avgtype in [None]+times:
             if isinstance(avgtype, int):
                 group_name = '%ih'%avgtype
@@ -305,7 +314,8 @@ def concate(r, isf, prev_r, prev_isf):
 
     return np.ma.masked_invalid(np.ma.concatenate((prev_r, r))[:-len(prev_r)]),\
             np.ma.concatenate((prev_isf, isf))[:-len(prev_isf)]
-def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
+def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24), 
+        varname='radar_estimated_rain_rate'):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
     in a netcdf-file where all the data is stored. It also calculates 1, 3, 6 and
@@ -319,33 +329,41 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
         out (st)         : The filname of the output data
     Keywords:
         timeavg (list)   : list containing averaging periods
+        varname          : variable name of data to be read
     Returns:
         None
     '''
     from glob import glob
     files = get_files(datafolder, first, last)
     meta = {}
+    #Get meta data for this file
     with nc(files[0]) as fnc:
         lon = fnc.variables['longitude'][0, :]
         lat = fnc.variables['latitude'][:, 0]
         meta['units'] = fnc.variables['time'].units
         meta['missing'] = -9999.0
         meta['size'] = fnc.dimensions['time'].size
+
+    #Get the mask
     if not isinstance(type(maskfile),type(None)):
         with nc(maskfile) as fnc:
-            mask = np.ma.masked_invalid(fnc.variables['mask_ring'][:])
+            #cpol dist
+            mask = np.ma.masked_invalid(fnc.variables['cpol'][:])
+            twp = fnc.variables['twp'][:] #twp mask
     else:
         mask = np.ones([len(lat), len(lon)])
-    varname = 'radar_estimated_rain_rate'
+        twp = np.ones_like(mask)
+
     with NCreate(out, 'w', dist_format='NETCDF4', disk_format='HDF5') as fnc:
-        fnc.create_rain(lat, lon, list(timeavg), meta)
+        fnc.create_rain(lat, lon, list(timeavg), meta, mask, twp)
         for tt, fname in enumerate(files):
             with nc(fname) as source:
-                sys.stdout.write('\rAdding %s ... '%(os.path.basename(fname)))
+                sys.stdout.write('\rAdding %s'%(os.path.basename(fname)))
                 sys.stdout.flush()
-
+                # Read data
                 rain_rate =  np.ma.masked_invalid(mask * np.ma.masked_less(
                                                   source.variables[varname][:],0.1).filled(0))
+                #Check if data has to be 'appended' or adde (first time step)
                 if tt == 0:
                     size = 0
                 else:
@@ -355,23 +373,27 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24)):
                 fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
                 fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
                 for hour in timeavg:
+                    #Get the data from the previous date, since avg is centered
                     prev_isfile, prev_rr = get_prev(fname, varname, mask, hour)
+                    #Concatenate previous data and current field
                     rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
+                    #Create area avg
                     data, hsize = fnc.create_avg(rr, isfile, source.variables['time'][:],
                                                  hour)
                     if hour in (1,3):
+                        #Calculate contours also for 1h and 3h avg's
                         contours = np.zeros_like(data)
                         for i in range(len(data)):
                             contours[i] = get_countours(np.ma.masked_less(data[i], 2))
                         fnc['%ih'%hour].variables['contours'][hsize:, :]\
                                 = np.ma.masked_equal(contours,0)
-
+                #Get contours for 10min timesteps
                 contours = np.zeros_like(rain_rate)
                 for i in range(len(rain_rate)):
                     contours[i] = get_countours(np.ma.masked_less(rain_rate[i], 2))
 
                 fnc['10min'].variables['contours'][size:, :] = np.ma.masked_equal(contours,0)
-            sys.stdout.write('\rAdding %s ... ok'%(os.path.basename(fname)))
+            sys.stdout.write('\rAdding %s'%(os.path.basename(fname)))
             sys.stdout.flush()
         sys.stdout.write('\n')
         #Create a copy of all rain-rate variables (lat,lon,time) order
@@ -383,7 +405,7 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
-    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','cpol_mask_ring.nc')
+    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','CPOL_masks.nc')
     datadir = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
          datetime.strptime(ending, '%Y%m%d'), maskfile, os.path.join(datadir, 'CPOL.nc'))
