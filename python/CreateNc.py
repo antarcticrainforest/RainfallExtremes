@@ -127,7 +127,7 @@ class NCreate(nc):
 
         return data, size
 
-    def create_rain(self, lat, lon, times, meta, mask, twp):
+    def create_rain(self, lat, lon, times, meta, cpol, twp):
         '''
         Create all important variables like rain-rate, lon, lat and time
         Arguments:
@@ -136,7 +136,7 @@ class NCreate(nc):
             times : tuple containing int's marking average periods (in hours)
             meta : dict with information about additional info
                     (size of the time vector per day, time units, missing_values)
-            mask : mask that represents the cpol disk
+            cpol : mask that represents the cpol disk
             twp  : mask that represents the twp area
 
         '''
