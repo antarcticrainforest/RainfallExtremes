@@ -15,7 +15,10 @@ def get_percentiles(fname, perc=list(range(1,100)), varname='rain_rate',
         group = fn.groups[group]
         present = group.variables['ispresent'][:]
         data = group.variables['rain_rate'][:]
-        data = data[present> 75,...]
+        if group == '10min':
+            data = data[present == 1]
+        else:
+            data = data[present> 75,...]
         data = data[data>0.1]
         percvals = np.percentile(data,perc)
 
