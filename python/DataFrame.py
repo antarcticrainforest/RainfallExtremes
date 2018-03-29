@@ -97,6 +97,35 @@ def datetime_range(iterable):
         else:
             yield group[0][1], group[-1][1]
 
+def get_extremeTS(fname, group, thresh, present, varname='rain_rate'):
+    '''
+    Get a time series for extreme events of a given class of rainfall
+
+    Arguments:
+        faname  : Name of the netcdf file that stores the rainfall data
+        thresh  : The group the data is stored
+        perc    : Threshold in mm/h that defines an extreme event
+        present : minimum percentage of 10min time-slices to be present to be considered
+    Keyworkds:
+        varname : variable name of the rain-rate
+    '''
+    from netCDF4 import Dataset as nc, num2date
+    data = []
+    index = []
+    with nc(fname) as ncf:
+        group = ncf.groups[group]
+        T = pd.DatetimeIndex(num2date(group.variables['time'][:],group.variables['time'].units))
+        for t in range(len(T)):
+            if group.variables['ispresent'][t] >= present:
+                index.append(t)
+                if (group.variables[varname][t] >=  thresh).any():
+                    data.append((T[t], 1))
+                else:
+                    data.append((T[t], 0))
+    return pd.DataFrame(np.array(data),index=index,columns=['time','event'])
+
+
+
 def get_shapes(colors, dates, opacity=0.2):
     """
     Create a list of plotly shapes to draw vertical line spans of given colors 
