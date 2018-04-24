@@ -19,8 +19,8 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 
 
-def Plot(periods, phase, cpolF, cmorphF, outDir, rank):
-    print('%2i : Working on %s'%(rank, phase))
+def Plot(periods, phase, cpolF, cmorphF, outDir, rank, itt, ittm):
+    print('%2i (%i/%i) : Working on %s'%(rank+1, itt, ittm, phase))
     start, end = list(periods.start.values), list(periods.end.values)
     T =[]
     for s, e in zip(start, end):
@@ -83,88 +83,86 @@ def Plot(periods, phase, cpolF, cmorphF, outDir, rank):
 
     first = True
     for i in range(len(rr_cm)):
-        print('%2i: Plotting data for %s (%s)'  %(rank+1,(cpol_times['10min'][idx[i,0]]+td).strftime('%Y-%m-%d %H:%M'),phase))
-        try:
-            rr_out = rr_cm[i].filled(0) / 3. /2
-        except AttributeError:
-            rr_out = rr_cm[i] / 3. /2       
-
-        if first:
-            fig = plt.figure(figsize=(20,15), dpi=72)
-            fig.suptitle('Rainfall %s'%P, fontsize=26, fontweight='bold')
-            ax1 = plt.subplot2grid((3,3), (0,1))
-            ax10 = plt.subplot2grid((3,3), (0,0))
-            ax6 = plt.subplot2grid((3,3), (0,2))
-            ax = plt.subplot2grid((3,3), (1,0), rowspan=2, colspan=3)
-            m_cm.drawcoastlines()
-        outer_title = 'CMORPH rain-rates at %s' %(t_cm[idx[i,-1]]+td).strftime('%Y-%m-%d %H:%M')
-        inner_title = 'Cpol rain-rate at %s' %(cpol_times['10min'][idx[i,1]]+td).strftime('%Y-%m-%d %H:%M')
-        if first:
-            rain_im = {}
-            rr_a = {}
-            rain_im['3h_cm'] = m_cm.pcolormesh(lon_cm, lat_cm, rr_out, vmin=0.1, vmax=5., cmap='Blues', shading='gouraud')
-            cbar=m_cm.colorbar(rain_im['3h_cm'],location='bottom',pad='5%')
-            cbar.set_label('Rain-rate [mm/h]',size=24)
-            cbar.ax.tick_params(labelsize=26)
-            axins = zoomed_inset_axes(ax, 6, loc=3)
-            axins.set_xlim(min(lon_cp), max(lon_cp))
-            axins.set_ylim(min(lat_cp), max(lon_cp))
-            m_cp_i = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=axins, resolution='f')
-            m_cp_1 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax1, resolution='f')
-            m_cp_10 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax10, resolution='f')
-            m_cp_6 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax6, resolution='f')
-            plt.xticks(visible=False)
-            plt.yticks(visible=False)
-            for m, name, a, ii in ((m_cp_10,'10min', ax10, 0),(m_cp_1,'1h', ax1, 1),(m_cp_i,'3h', axins, 2),(m_cp_6,'6h', ax6, 3)):
-                rain_im[name] = m.pcolormesh(lon_cp, lat_cp, rr_cp[name][i].filled(np.nan), vmin=0.1, vmax=5. ,cmap='Blues', shading='gouraud')
-                m.drawcoastlines()
-                rr_a[name] = a
-                if not name.startswith('3h'):
-                    rr_a[name].set_title('Cpol at %s %s'%((cpol_times[name][idx[i,ii]]+td).strftime('%Y-%m-%d %H:%M'), avg_type[name]), size=18)
-        else:
-            for ii, name in enumerate(('10min','1h','3h','6h','3h_cm')):
-                if name == '3h_cm':
-                    rain_im[name].set_array(rr_out.ravel())
-                else:
-                    rain_im[name].set_array(rr_cp[name][i].filled(np.nan).ravel())
-                if not name.startswith('3h'):
-                    rr_a[name].set_title('Cpol at %s %s'%((cpol_times[name][idx[i,ii]]+td).strftime('%Y-%m-%d %H:%M'), avg_type[name]), size=18)
-        ax.set_title(outer_title,size=26)
-        if first:
-            mark_inset(ax, axins, loc1=4, loc2=1, fc="none", ec="0.5")
-            fig.subplots_adjust(top=0.88,wspace=0.01)
-
         fname=os.path.join(outDir,'comparison-%s-%s.png'%(phase,(cpol_times['10min'][idx[i,0]]+td).strftime('%Y-%m-%d_%H%M')))
+        if not os.path.isfile(fname):
+            print('%2i (%i/%i): Plotting data for %s (%s)'  %(rank+1, itt, ittm, (cpol_times['10min'][idx[i,0]]+td).strftime('%Y-%m-%d %H:%M'),phase))
+            try:
+                rr_out = rr_cm[i].filled(0) / 3. /2
+            except AttributeError:
+                rr_out = rr_cm[i] / 3. /2       
 
-        fig.savefig(fname, dpi=72, facecolor='w', edgecolor='w', bbox_inches='tight')
-        first = False
-        #plt.show()
-        #ax1.cla(),ax10,ax.cla(),ax6.cla(), fig.clf(), plt.close()
-        #break
+            if first:
+                fig = plt.figure(figsize=(20,15), dpi=72)
+                fig.suptitle('Rainfall %s'%P, fontsize=26, fontweight='bold')
+                ax1 = plt.subplot2grid((3,3), (0,1))
+                ax10 = plt.subplot2grid((3,3), (0,0))
+                ax6 = plt.subplot2grid((3,3), (0,2))
+                ax = plt.subplot2grid((3,3), (1,0), rowspan=2, colspan=3)
+                m_cm.drawcoastlines()
+            outer_title = 'CMORPH rain-rates at %s' %(t_cm[idx[i,-1]]+td).strftime('%Y-%m-%d %H:%M')
+            inner_title = 'Cpol rain-rate at %s' %(cpol_times['10min'][idx[i,1]]+td).strftime('%Y-%m-%d %H:%M')
+            if first:
+                rain_im = {}
+                rr_a = {}
+                rain_im['3h_cm'] = m_cm.pcolormesh(lon_cm, lat_cm, rr_out, vmin=0.1, vmax=5., cmap='Blues', shading='gouraud')
+                cbar=m_cm.colorbar(rain_im['3h_cm'],location='bottom',pad='5%')
+                cbar.set_label('Rain-rate [mm/h]',size=24)
+                cbar.ax.tick_params(labelsize=26)
+                axins = zoomed_inset_axes(ax, 6, loc=3)
+                axins.set_xlim(min(lon_cp), max(lon_cp))
+                axins.set_ylim(min(lat_cp), max(lon_cp))
+                m_cp_i = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=axins, resolution='f')
+                m_cp_1 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax1, resolution='f')
+                m_cp_10 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax10, resolution='f')
+                m_cp_6 = Basemap(llcrnrlat=min(lat_cp), llcrnrlon=min(lon_cp), urcrnrlat=max(lat_cp), urcrnrlon=max(lon_cp), ax=ax6, resolution='f')
+                plt.xticks(visible=False)
+                plt.yticks(visible=False)
+                for m, name, a, ii in ((m_cp_10,'10min', ax10, 0),(m_cp_1,'1h', ax1, 1),(m_cp_i,'3h', axins, 2),(m_cp_6,'6h', ax6, 3)):
+                    rain_im[name] = m.pcolormesh(lon_cp, lat_cp, rr_cp[name][i].filled(np.nan), vmin=0.1, vmax=5. ,cmap='Blues', shading='gouraud')
+                    m.drawcoastlines()
+                    rr_a[name] = a
+                    if not name.startswith('3h'):
+                        rr_a[name].set_title('Cpol at %s %s'%((cpol_times[name][idx[i,ii]]+td).strftime('%Y-%m-%d %H:%M'), avg_type[name]), size=18)
+            else:
+                for ii, name in enumerate(('10min','1h','3h','6h','3h_cm')):
+                    if name == '3h_cm':
+                        rain_im[name].set_array(rr_out.ravel())
+                    else:
+                        rain_im[name].set_array(rr_cp[name][i].filled(np.nan).ravel())
+                    if not name.startswith('3h'):
+                        rr_a[name].set_title('Cpol at %s %s'%((cpol_times[name][idx[i,ii]]+td).strftime('%Y-%m-%d %H:%M'), avg_type[name]), size=18)
+            ax.set_title(outer_title,size=26)
+            if first:
+                mark_inset(ax, axins, loc1=4, loc2=1, fc="none", ec="0.5")
+                fig.subplots_adjust(top=0.88,wspace=0.01)
+            fig.savefig(fname, dpi=72, facecolor='w', format='png', edgecolor='w', bbox_inches='tight')
+            first = False
 if __name__ == '__main__':
     from mpi4py import MPI
     DFFile = os.path.join(os.environ['HOME'],'Data','Extremes','CPOL','CPOL_MonsoonPhases-dates.hdf5')
     cpolF = os.path.join(os.environ['HOME'], 'Data', 'Extremes', 'CPOL', 'CPOL_1998-2017.nc')
     cmorphF = os.path.join(os.environ['HOME'], 'Data', 'Darwin', 'netcdf', 'Cmorph_1998-2010.nc')
     outDir = os.path.join(os.environ['HOME'], 'Data','Extremes' ,'CPOL', 'Plot')
-    cat = {'bursts':0,'breaks':0,'priors':0}
-    dates = {'bursts':[],'breaks':[],'priors':[]}
+    #cat = {'bursts':0,'breaks':0,'priors':0}
+    #dates = {'bursts':[],'breaks':[],'priors':[]}
+    cat = {'bursts':0,'breaks':0}
+    dates = {'bursts':[],'breaks':[]}
     split = {}
     comm = MPI.COMM_WORLD
     rank = comm.rank
     nproc = comm.size
     name = comm.name
     with pd.HDFStore(DFFile,'r') as h5:
-        for key in ['/priors','/bursts','/breaks']:
-            data = h5[key]
+        for key in dates.keys():
+            data = h5["/"+key]
             for i in range(len(data)):
-                cat[key[1:]]+=1.
-                dates[key[1:]].append(list(data.iloc[i].values))
+                cat[key]+=1.
+                dates[key].append(list(data.iloc[i].values))
     if nproc == 1:
-        for key in ['priors','bursts','breaks']:
-            for idx in np.array_split(dates[key],int(len(data)/4.)):
-                Plot( pd.DataFrame(idx, columns=['start','end']), key, cpolF, cmorphF, outDir, rank)
-    else:
+        for key in dates.keys():
+            for idxn, idx in enumerate(np.array_split(dates[key],int(len(data)/4.))):
+                Plot( pd.DataFrame(idx, columns=['start','end']), key, cpolF, cmorphF, outDir, rank, idxn+1, int(len(data)/4.) )
+    elif rank == 0:
         if nproc == 2:
             nproc += 1
         tmp = -1
@@ -186,12 +184,19 @@ if __name__ == '__main__':
             split[k] = np.arange(n,split[k]+n)
             n=split[k][-1]+1
         out = {}
-        for i in range(nproc):
+        i = 0
+        while i < nproc:
             for k in split.keys():
-                ii = 0
                 if i in split[k]:
-                    out[i]=(k,np.array_split(dates[k],len(split[k]))[ii])
-                    ii+=1
-        for idx in np.array_split(out[rank][-1],int(len(out[rank][-1])/4.)):
-            Plot( pd.DataFrame(idx, columns=['start','end']), out[rank][0], cpolF, cmorphF, outDir, rank)
+                    dd = np.array_split(dates[k],len(split[k]))
+                    for ii in dd:
+                        out[i]=(k,ii)
+                        i+=1
+    else:
+        out = None
+    if nproc > 1:
+        out = comm.bcast(out, root=0)
+        for idxn, idx in enumerate(np.array_split(out[rank][-1],int(len(out[rank][-1])/4.))):
+        #    print(rank, out[rank][0], pd.DataFrame(idx, columns=['start','end']))
+            Plot( pd.DataFrame(idx, columns=['start','end']), out[rank][0], cpolF, cmorphF, outDir, rank, idxn+1, int(len(out[rank][-1])/4.) )
 
