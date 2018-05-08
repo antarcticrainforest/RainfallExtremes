@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from scipy.ndimage import gaussian_filter as bl
 from netCDF4 import Dataset as nc
+import cv2
 
 def get_countours(array, kernel_size=3, sigma=0.15):
     '''
@@ -15,7 +16,6 @@ def get_countours(array, kernel_size=3, sigma=0.15):
         Returns:
             2D array with labeled contours of rainfall
     '''
-    import cv2
     #Try to make masked values 0
     try:
         array = np.ma.masked_invalid(array).filled(0)
@@ -302,7 +302,8 @@ def get_prev(f1, varname, mask, hour):
         with nc(previous_file) as gnc:
             rr = gnc.variables[varname][-length:]
             rr = np.ma.masked_invalid(mask*np.ma.masked_less(rr, 0.1).filled(0))
-            ifile = gnc.variables['isfile'][-length:]
+            rr = np.ma.masked_greater(rr,300)
+            ifile = gnc.variables['qc_exist'][-length:]
     else:
         rr = np.ma.masked_less(np.zeros([length, mask.shape[0], mask.shape[0]]), 1)
         ifile = np.zeros([length])
@@ -362,7 +363,9 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                 sys.stdout.flush()
                 # Read data
                 rain_rate =  np.ma.masked_invalid(mask * np.ma.masked_less(
-                                                  source.variables[varname][:],0.1).filled(0))
+                                                  source.variables[varname][:],
+                                                  0.1).filled(0))
+                rain_rate = np.ma.masked_greater(rain_rate, 350)
                 #Check if data has to be 'appended' or adde (first time step)
                 if tt == 0:
                     size = 0
@@ -371,12 +374,12 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                 fnc['10min'].variables['time'][size:] = source.variables['time'][:]
                 fnc['10min'].variables['rain_rate'][size:, :] = rain_rate
                 fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
-                fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
+                fnc['10min'].variables['ispresent'][size:] = source.variables['qc_exist'][:]
                 for hour in timeavg:
                     #Get the data from the previous date, since avg is centered
                     prev_isfile, prev_rr = get_prev(fname, varname, mask, hour)
                     #Concatenate previous data and current field
-                    rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
+                    rr, isfile = concate(rain_rate, source.variables['qc_exist'][:], prev_rr, prev_isfile)
                     #Create area avg
                     data, hsize = fnc.create_avg(rr, isfile, source.variables['time'][:],
                                                  hour)
@@ -405,7 +408,8 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
-    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf','CPOL_masks.nc')
-    datadir = os.path.join(os.getenv('HOME'), 'Data', 'Darwin', 'netcdf')
+    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL','CPOL_masks.nc')
+    datadir = os.path.join(os.getenv('HOME'), 'Data', 'CPOL', 'netcdf')
+    outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017.nc')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
-         datetime.strptime(ending, '%Y%m%d'), maskfile, os.path.join(datadir, 'CPOL.nc'))
+         datetime.strptime(ending, '%Y%m%d'), maskfile, outfile)
