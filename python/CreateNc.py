@@ -58,7 +58,7 @@ def get_countours(array, kernel_size=3, sigma=0.15):
     return mask.astype('int32')
 
 def get_files(directory, tstep, ending,
-              fstring='CPOL_RADAR_ESTIMATED_RAIN_RATE_%Y%m%d_level2.nc'):
+              fstring='CPOL_RADAR_ESTIMATED_RAIN_RATE_%Y%m%d.nc'):
     '''
     Get filename of radar files in a given data period
     Arguments:
@@ -74,7 +74,12 @@ def get_files(directory, tstep, ending,
     '''
     files = []
     while tstep <= ending:
-        fname = os.path.join(directory, '%04i'%tstep.year, tstep.strftime(fstring))
+        if os.path.isdir(os.path.join(directory, '%04i'%tstep.year)):
+          dirname = os.path.join(directory, '%04i'%tstep.year)
+        else:
+          dirname = directory
+
+        fname = os.path.join(dirname, tstep.strftime(fstring))
         if os.path.isfile(fname):
             files.append(fname)
         tstep += timedelta(hours=24)
@@ -303,7 +308,7 @@ def get_prev(f1, varname, mask, hour):
             rr = gnc.variables[varname][-length:]
             rr = np.ma.masked_invalid(mask*np.ma.masked_less(rr, 0.1).filled(0))
             rr = np.ma.masked_greater(rr,300)
-            ifile = gnc.variables['qc_exist'][-length:]
+            ifile = gnc.variables['isfile'][-length:]
     else:
         rr = np.ma.masked_less(np.zeros([length, mask.shape[0], mask.shape[0]]), 1)
         ifile = np.zeros([length])
@@ -316,7 +321,7 @@ def concate(r, isf, prev_r, prev_isf):
     return np.ma.masked_invalid(np.ma.concatenate((prev_r, r))[:-len(prev_r)]),\
             np.ma.concatenate((prev_isf, isf))[:-len(prev_isf)]
 def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24), 
-        varname='radar_estimated_rain_rate'):
+        varname='radar_estimated_rain_rate', metafile=None):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
     in a netcdf-file where all the data is stored. It also calculates 1, 3, 6 and
@@ -338,15 +343,22 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
     files = get_files(datafolder, first, last)
     meta = {}
     #Get meta data for this file
+    if not ( metafile is None):
+      mfile = metafile
+    else:
+      mfile = files[0]
+    #Get meta data for this file
+    with nc(mfile) as fnc:
+        lon = fnc.variables['lon'][:]
+        lat = fnc.variables['lat'][:]
     with nc(files[0]) as fnc:
-        lon = fnc.variables['longitude'][0, :]
-        lat = fnc.variables['latitude'][:, 0]
         meta['units'] = fnc.variables['time'].units
         meta['missing'] = -9999.0
         meta['size'] = fnc.dimensions['time'].size
 
     #Get the mask
-    if not isinstance(type(maskfile),type(None)):
+    print(maskfile)
+    if not (maskfile is None):
         with nc(maskfile) as fnc:
             #cpol dist
             mask = np.ma.masked_invalid(fnc.variables['cpol'][:])
@@ -374,12 +386,12 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                 fnc['10min'].variables['time'][size:] = source.variables['time'][:]
                 fnc['10min'].variables['rain_rate'][size:, :] = rain_rate
                 fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
-                fnc['10min'].variables['ispresent'][size:] = source.variables['qc_exist'][:]
+                fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
                 for hour in timeavg:
                     #Get the data from the previous date, since avg is centered
                     prev_isfile, prev_rr = get_prev(fname, varname, mask, hour)
                     #Concatenate previous data and current field
-                    rr, isfile = concate(rain_rate, source.variables['qc_exist'][:], prev_rr, prev_isfile)
+                    rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
                     #Create area avg
                     data, hsize = fnc.create_avg(rr, isfile, source.variables['time'][:],
                                                  hour)
@@ -408,8 +420,9 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
-    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL','CPOL_masks.nc')
-    datadir = os.path.join(os.getenv('HOME'), 'Data', 'CPOL', 'netcdf')
+    #maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL','CPOL_masks.nc')
+    datadir = '/g/data2/rr5/vhl548/NEW_CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
     outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017.nc')
+    metafile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_masks.nc')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
-         datetime.strptime(ending, '%Y%m%d'), maskfile, outfile)
+         datetime.strptime(ending, '%Y%m%d'), None, outfile, metafile=metafile)

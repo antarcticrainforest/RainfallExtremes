@@ -1,7 +1,7 @@
 import os, sys, re, glob
 import numpy as np
 from datetime import datetime, timedelta
-from netCDF4 import Dataset as nc
+from netCDF4 import Dataset as nc, num2date, date2num
 
 class NCreate(nc):
     '''
@@ -79,7 +79,13 @@ def get_files(directory, tstep, ending):
     '''
     files = []
     for year in range(tstep.year, ending.year+1):
-        if len(glob.glob(os.path.join(directory,'%04i'%year,'*.nc'))):
+        if len(glob.glob(os.path.join(directory,'*.nc'))):
+            #All files are in one folder
+            for fn in glob.glob(os.path.join(directory,'*.nc')):
+                files.append(os.path.join(directory, os.path.basename(fn)))
+            files.sort()
+            return files
+        elif len(glob.glob(os.path.join(directory,'%04i'%year,'*.nc'))):
             #Files are sorted per year
             for fn in glob.glob(os.path.join(directory,'%04i'%year,'*.nc')):
                 files.append(os.path.join(directory,'%04i'%year,
@@ -94,7 +100,7 @@ def get_files(directory, tstep, ending):
 
 
 
-def main(datafolder, first, last, out, dims,
+def main(datafolder, first, last, out, dims, metafile=None,
          varname='radar_estimated_rain_rate', outvar='rain_rate'):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
@@ -113,18 +119,28 @@ def main(datafolder, first, last, out, dims,
     files = get_files(datafolder, first, last)
     meta = dict(dims={})
     #Get meta data for this file
-    with nc(files[0]) as fnc:
+    if not ( metafile is None):
+      mfile = metafile
+    else:
+      mfile = files[0]
+    name = {'longitude':'longitude', 'latitude':'latitude', 'time':'time'}
+    with nc(mfile) as fnc:
         for d in dims:
-            meta['dims'][d]={}
-
+            meta['dims'][d] = {}
             meta['dims'][d]['data'] = fnc.variables[d][:]
-            meta['dims'][d]['name'] = fnc.variables[d].long_name
+            try:
+              meta['dims'][d]['name'] = fnc.variables[d].long_name
+            except AttributeError:
+              meta['dims'][d]['name'] = name[d]
             meta['dims'][d]['units']= fnc.variables[d].units
         meta['var']= dict(name=fnc.variables[varname].long_name,
                           units=fnc.variables[varname].units)
-        meta['units'] = fnc.variables['time'].units
+        meta['units'] = 'seconds since 1970-01-01 00:00:00'
         meta['missing'] = -9999.0
-        meta['size'] = fnc.dimensions['time'].size
+        try:
+          meta['size'] = fnc.dimensions['time'].size
+        except KeyError:
+          meta['size'] = 144
     def get_tr(num):
         return tuple(list(range(1,num))+[0])
     with NCreate(out, 'w', dist_format='NETCDF4', disk_format='HDF5') as fnc:
@@ -141,8 +157,12 @@ def main(datafolder, first, last, out, dims,
                     size = 0
                 else:
                     size = fnc.dimensions['time'].size
-                fnc.variables['time'][size:] = source.variables['time'][:]
-                fnc.variables[outvar][...,size:] = rain_rate.transpose(get_tr(len(dims)+1))
+                timevar=num2date(source.variables['time'][:],source.variables['time'].units)
+                try:
+                  fnc.variables[outvar][...,size:] = rain_rate.transpose(get_tr(len(dims)+1))
+                  fnc.variables['time'][size:] = date2num(timevar, meta['units'])
+                except IndexError:
+                  pass
         sys.stdout.write('\n')
 
 if __name__ == '__main__':
@@ -151,8 +171,12 @@ if __name__ == '__main__':
     ending = '20170502'
     #
     maskfile = None
-    dim = ('range',)
-    datadir = os.path.join(os.getenv('HOME'), 'Data', 'CPOL', 'netcdf', 'PPI')
-    outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017_ppi.nc')
+    dim = ('lon', 'lat')
+    
+    #datadir = os.path.join(os.getenv('HOME'), 'Data', 'CPOL', 'netcdf', 'PPI')
+    #datadir = '/g/data2/rr5/vhl548/CPOL_level_1b/PPI'
+    datadir = '/g/data2/rr5/vhl548/NEW_CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
+    metafile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_masks.nc')
+    outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017.nc')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
-         datetime.strptime(ending, '%Y%m%d'), outfile, dim )
+         datetime.strptime(ending, '%Y%m%d'), outfile, dim, metafile=metafile)
