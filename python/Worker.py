@@ -41,6 +41,7 @@ def um2nc(expID, thread, *args, **kwargs):
             cmd2='echo mv %s.nc %s' %(umfile, outfile)
             print('%s: %s'%(thread, cmd2))
             #os.system(cmd2)
+    os.chdir(old_path)
     return 0
 
 
