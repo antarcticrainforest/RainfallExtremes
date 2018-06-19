@@ -50,8 +50,8 @@ def um2nc(expID, thread, *args, **kwargs):
         outdates.sort()
         mergefile = 'um-%s-%s-%s_%s-%s.nc'%(res, expID.replace('u-',''), ncid,
                        outdates[0],outdates[-1])
-        cdofiles = 'um-%s-%s-%s_*'%(res, expID.replace('u-',''), ncid)
-        cmd3 = 'cdo mergetime %s %s'%(cdofiles, mergefile)
+        cdofiles = 'um-%s-%s-%s_'%(res, expID.replace('u-',''), ncid)
+        cmd3 = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
         print('%s: %s'%(thread, cmd3))
         os.system(cmd3)
         cmd4 = 'rm %s????????_????.nc'%cdofiles
