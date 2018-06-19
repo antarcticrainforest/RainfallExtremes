@@ -36,8 +36,9 @@ def um2nc(expID, thread, *args, **kwargs):
             os.system(cmd)
             num = int(umfile.split('_')[-1].replace(umid,''))
             outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
-            outfile = 'um-%s-%s_%s.nc'%(res, expID.replace('u-',''), outdate)
-            cmd2='mv %s.nc %s' %(umfile, outfile)
+            outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
+                       outdate)
+            cmd2 = 'mv %s.nc %s' %(umfile, outfile)
             print('%s: %s'%(thread, cmd2))
             os.system(cmd2)
     os.chdir(old_path)
