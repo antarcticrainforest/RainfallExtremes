@@ -2,7 +2,7 @@
 Module to create netcdf-files for the ensemble run
 '''
 
-import queue
+import queue as Queue
 import threading
 import numpy as np
 import os
