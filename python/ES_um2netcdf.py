@@ -96,7 +96,7 @@ Usage:
 func, args, kwargs = get_func(sys)
 nameList = ['u-11100000', 'u-11100600', 'u-11101200', 'u-11101800',
             'u-11110000', 'u-11110600', 'u-11111200']
-threadList = ['Thread-%02i'%i for i in range(7)]
+threadList = ['Thread-%02i'%i for i in range(1)]
 workQueue = Queue.Queue(len(nameList))
 threads = []
 threadID = 1
