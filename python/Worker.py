@@ -35,7 +35,7 @@ def um2nc(expID, thread, *args, **kwargs):
         umfiles = glob('umnsaa_%s'%umid)
         umfiles.sort()
         for umfile in umfiles:
-            testfile = glob('um-%s-%s-%s_????????-????????.nc'\
+            testfile = glob('um-%s-%s-%s_????????_????-????????_????.nc'\
             %(res, expID.replace('u-',''), ncid))
             if not len(testfile):
                 cmd='um2cdf %s'%umfile
