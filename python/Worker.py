@@ -25,7 +25,7 @@ def um2nc(expID, thread, *args, **kwargs):
     path = os.path.join(os.getenv('HOME'), 'cylc-run', expID, 'share', 'cycle',
                         umID, res, 'protoRA1T', 'um')
     if not os.path.isdir(path):
-        print('%s : path does not exist')
+        print('%s : path does not exist'%path)
         return 1
 
     os.chdir(path)
