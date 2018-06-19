@@ -54,7 +54,7 @@ def um2nc(expID, thread, *args, **kwargs):
         cmd3 = 'cdo mergetime %s %s'%(cdofiles, mergefile)
         print('%s: %s'%(thread, cmd3))
         os.system(cmd3)
-        cmd4 = 'rm %s'%cdofiles
+        cmd4 = 'rm %s????????_????.nc'%cdofiles
         print('%s: %s'%(thread, cmd4))
         os.system(cmd4)
     os.chdir(old_path)
