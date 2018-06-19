@@ -32,18 +32,23 @@ def um2nc(expID, thread, *args, **kwargs):
     for umid, ncid in fileID.items():
         outdates = []
         ii = 0
-        for umfile in glob('umnsaa_%s*'%umid):
-            cmd='um2cdf %s'%umfile
-            print('%s: %s'%(thread, cmd))
-            os.system(cmd)
-            num = int(umfile.split('_')[-1].replace(umid,''))
-            outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
-            outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
-                       outdate)
-            cmd2 = 'mv %s.nc %s' %(umfile, outfile)
-            outdates.append(outdate)
-            print('%s: %s'%(thread, cmd2))
-            os.system(cmd2)
+        umfiles = glob('umnsaa_%s'%umid)
+        umfiles.sort()
+        for umfile in umfiles:
+            testfile = glob('um-%s-%s-%s_????????-????????.nc'\
+            %(res, expID.replace('u-',''), ncid))
+            if not len(testfile):
+                cmd='um2cdf %s'%umfile
+                print('%s: %s'%(thread, cmd))
+                os.system(cmd)
+                num = int(umfile.split('_')[-1].replace(umid,''))
+                outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
+                outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
+                           outdate)
+                cmd2 = 'mv %s.nc %s' %(umfile, outfile)
+                outdates.append(outdate)
+                print('%s: %s'%(thread, cmd2))
+                os.system(cmd2)
             ii += 1
             if ii > 2:
                 break
