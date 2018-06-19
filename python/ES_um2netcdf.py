@@ -8,6 +8,9 @@ import numpy as np
 import os
 import sys
 import time
+import sys
+global exitFlag
+exitFlag = 0
 
 
 
@@ -84,10 +87,7 @@ Usage:
     return method, args, kwargs
 
 
-if __name__ == '__main__':
-    import sys
-    global exitFlag
-    exitFlag = 0
+#if __name__ == '__main__':
     func, args, kwargs = get_func(sys)
     nameList = ['u-11100000', 'u-11100600', 'u-11101200', 'u-11101800',
                 'u-11110000', 'u-11110600', 'u-11111200']
@@ -96,6 +96,7 @@ if __name__ == '__main__':
     threads = []
     threadID = 1
     lock = threading.Lock()
+    print(threadList)
     # Create new threads
     for tName in threadList:
         thread = EsThread(threadID, tName, workQueue, lock, func, args, kwargs)
