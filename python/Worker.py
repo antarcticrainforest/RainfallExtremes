@@ -38,6 +38,7 @@ def um2nc(expID, thread, *args, **kwargs):
             testfile = glob('um-%s-%s-%s_????????_????-????????_????.nc'\
             %(res, expID.replace('u-',''), ncid))
             if not len(testfile):
+                merge = True
                 cmd='um2cdf %s'%umfile
                 print('%s: %s'%(thread, cmd))
                 os.system(cmd)
@@ -49,19 +50,23 @@ def um2nc(expID, thread, *args, **kwargs):
                 outdates.append(outdate)
                 print('%s: %s'%(thread, cmd2))
                 os.system(cmd2)
+            else:
+                merge = False
             ii += 1
             if ii > 2:
                 break
+
         outdates.sort()
-        mergefile = 'um-%s-%s-%s_%s-%s.nc'%(res, expID.replace('u-',''), ncid,
-                       outdates[0],outdates[-1])
-        cdofiles = 'um-%s-%s-%s_'%(res, expID.replace('u-',''), ncid)
-        cmd3 = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
-        print('%s: %s'%(thread, cmd3))
-        os.system(cmd3)
-        cmd4 = 'rm %s????????_????.nc'%cdofiles
-        print('%s: %s'%(thread, cmd4))
-        os.system(cmd4)
+        if merge:
+            mergefile = 'um-%s-%s-%s_%s-%s.nc'%(res, expID.replace('u-',''), ncid,
+                                                outdates[0],outdates[-1])
+            cdofiles = 'um-%s-%s-%s_'%(res, expID.replace('u-',''), ncid)
+            cmd3 = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
+            print('%s: %s'%(thread, cmd3))
+            os.system(cmd3)
+            cmd4 = 'rm %s????????_????.nc'%cdofiles
+            print('%s: %s'%(thread, cmd4))
+            os.system(cmd4)
     os.chdir(old_path)
     return 0
 
