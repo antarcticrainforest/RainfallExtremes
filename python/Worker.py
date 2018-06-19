@@ -30,6 +30,8 @@ def um2nc(expID, thread, *args, **kwargs):
 
     os.chdir(path)
     for umid, ncid in fileID.items():
+        outdates = []
+        ii = 0
         for umfile in glob('umnsaa_%s*'%umid):
             cmd='um2cdf %s'%umfile
             print('%s: %s'%(thread, cmd))
@@ -39,8 +41,22 @@ def um2nc(expID, thread, *args, **kwargs):
             outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
                        outdate)
             cmd2 = 'mv %s.nc %s' %(umfile, outfile)
+            outdates.append(outdate)
             print('%s: %s'%(thread, cmd2))
             os.system(cmd2)
+            ii += 1
+            if ii > 2:
+                break
+        outdates.sort()
+        mergefile = 'um-%s-%s-%s_%s-%s.nc'%(res, expID.replace('u-',''), ncid,
+                       outdates[0],outdates[-1])
+        cdofiles = 'um-%s-%s-%s_*'%(res, expID.replace('u-',''), ncid)
+        cmd3 = 'cdo mergetime %s %s'%(cdofiles, mergefile)
+        print('%s: %s'%(thread, cmd3))
+        os.system(cmd3)
+        cmd4 = 'rm %s'%cdofiles
+        print('%s: %s'%(thread, cmd4))
+        os.system(cmd4)
     os.chdir(old_path)
     return 0
 
