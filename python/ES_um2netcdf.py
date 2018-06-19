@@ -9,7 +9,6 @@ import os
 import sys
 import time
 import sys
-global exitFlag
 exitFlag = 0
 
 
@@ -31,16 +30,22 @@ class EsThread(threading.Thread):
 #@synchronized
 def worker(func, threadName, q, queueLock, args, kwargs):
 
+    global exitFlag
     while not exitFlag:
         queueLock.acquire()
         if not q.empty():
             expID = q.get()
             queueLock.release()
             print("%s processing %s" % (threadName, expID))
+            #'''
             try:
-                exitFlag += func(*args, **kwargs)
+                out = func(expID,threadName,*args, **kwargs)
             except:
-                exitFlag += 1
+                out = 1
+            #'''
+            if out != 0:
+                print('%s failed'%threadName)
+                break
         else:
             queueLock.release()
         time.sleep(1)
@@ -88,39 +93,39 @@ Usage:
 
 
 #if __name__ == '__main__':
-    func, args, kwargs = get_func(sys)
-    nameList = ['u-11100000', 'u-11100600', 'u-11101200', 'u-11101800',
-                'u-11110000', 'u-11110600', 'u-11111200']
-    threadList = ['Thread-%02i'%i for i in range(7)]
-    workQueue = Queue.Queue(len(nameList))
-    threads = []
-    threadID = 1
-    lock = threading.Lock()
-    print(threadList)
-    # Create new threads
-    for tName in threadList:
-        thread = EsThread(threadID, tName, workQueue, lock, func, args, kwargs)
-        thread.start()
-        threads.append(thread)
-        threadID += 1
+func, args, kwargs = get_func(sys)
+nameList = ['u-11100000', 'u-11100600', 'u-11101200', 'u-11101800',
+            'u-11110000', 'u-11110600', 'u-11111200']
+threadList = ['Thread-%02i'%i for i in range(7)]
+workQueue = Queue.Queue(len(nameList))
+threads = []
+threadID = 1
+lock = threading.Lock()
+print(threadList)
+# Create new threads
+for tName in threadList:
+    thread = EsThread(threadID, tName, workQueue, lock, func, args, kwargs)
+    thread.start()
+    threads.append(thread)
+    threadID += 1
 
-    # Fill the queue
-    lock.acquire()
-    for expID in nameList:
-        workQueue.put(expID)
-    lock.release()
+# Fill the queue
+lock.acquire()
+for expID in nameList:
+    workQueue.put(expID)
+lock.release()
 
-    # Wait for queue to empty
-    while not workQueue.empty():
-        pass
+# Wait for queue to empty
+while not workQueue.empty():
+    pass
 
-    # Notify threads it's time to exit
-    exitFlag = 1
+# Notify threads it's time to exit
+exitFlag = 1
 
-    # Wait for all threads to complete
-    for t in threads:
-         t.join()
-    print("Exiting Main Thread")
+# Wait for all threads to complete
+for t in threads:
+     t.join()
+print("Exiting Main Thread")
 
 
 
