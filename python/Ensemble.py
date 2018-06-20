@@ -1,9 +1,9 @@
-import multiprocessing
+from multiprocessing import Process, Value, current_process
 import sys
 import os
 import time
 def get_func(ipt):
-    from Worker import um2nc
+    from Worker import um2nc, test
     exit='''
 Usage:
     %s func_name [args] [kwargs]
@@ -43,13 +43,15 @@ Usage:
 
     return method, args, kwargs
 
-def worker(func, expID, args, kwargs):
-   name = multiprocessing.current_process().name
+def worker(func, expID, exitValue, args, kwargs):
+   name = current_process().name
+   exitValue.value += 1
    ret = func(expID, name, *args, **kwargs)
    if ret != 0 :
-     print('%s has failed'%name)
+     sys.stdout.write('%s has failed\n'%name)
    else:
-     print('%s has succeeded'%name)
+     sys.stdout.write('%s has succeeded\n'%name)
+     exitValue.value -= 1
 
 
 if __name__ == '__main__':
@@ -57,9 +59,27 @@ if __name__ == '__main__':
       'u-11110000', 'u-11111200']
   func, args, kwargs = get_func(sys)
   jobs = []
+  exitValue = Value('i',0)
   for expID in nameList:
-    p  = multiprocessing.Process(target=worker, args=(func, expID, args, kwargs))
+    p  = Process(target=worker, args=(func, expID, exitValue, args, kwargs))
     jobs.append(p)
     p.start()
+
+  while True:
+    active = 0
+    for job in jobs:
+      active += int(job.is_alive())
+    if not active:
+      break
+    time.sleep(1)
+  print(exitValue.value)
+  if exitValue.value != 0:
+    sys.stdout.write('%s had %i failed processes\n'\
+                      %(os.path.basename(sys.argv[0]), exitValue.value))
+  else:
+    sys.stdout.write('%s has finished\n'\
+                      %(os.path.basename(sys.argv[0])))
+  sys.exit(exitValue.value)
+
 
 
