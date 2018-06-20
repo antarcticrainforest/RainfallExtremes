@@ -33,13 +33,14 @@ cat << EOF >> ~/.ens_jobs/pbs_submit-${v}.sh
 # set name of job
 #PBS -N ensemble-${v}
 #PBS -q expressbw
-#PBS -l walltime=12:00:00
+#PBS -l walltime=24:00:00
 #PBS -l mem=14GB
 #PBS -l ncpus=4
 module use /g/data3/hh5/public/modules
 module use ~access/modules
 module load pbs
 module load conda/analysis3
+export PATH=$PATH:/projects/access/bin
 export PYTHONWARNINGS="ignore"
 cd ${workdir}
 python ${workdir%/}/Ensemble.py $@ ${v}
