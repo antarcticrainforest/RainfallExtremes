@@ -3,7 +3,18 @@ Python module with functions that does the Ensemble manipulation
 '''
 from glob import glob
 from datetime import datetime, timedelta
-import os
+import os, sys
+import time, random
+
+
+def test(expID, thread):
+  '''
+  Make some tests for the multiprocessing environment
+  '''
+
+  print('%s is working on %s'%(thread, expID))
+  time.sleep(4*random.random())
+  return 0 #random.randint(0,1)
 
 def um2nc(expID, thread, *args, **kwargs):
     '''
@@ -30,14 +41,32 @@ def um2nc(expID, thread, *args, **kwargs):
     old_path = os.path.dirname(__file__)
     path = os.path.join(os.getenv('HOME'), 'cylc-run', expID, 'share', 'cycle',
                         umID, 'darwin', res, 'protoRA1T', 'um')
+    outpath = os.path.join(os.getenv('HOME'), 'Data', 'UM', 'RA1T', umID,
+                           'darwin', res)
+    if not os.path.isdir(outpath):
+      if os.system('mkdir -p %s'%outpath) != 0:
+        print('Making dir %s failed'%outpath)
+        return 1
     if not os.path.isdir(path):
         print('%s : path does not exist'%path)
         return 1
-    os.chdir(path)
+    os.chdir(outpath)
+    def exec(thread, cmd):
+      '''Execute command an leave'''
+      sys.stdout.write('%s: Executing %s \n'%(thread, cmd))
+      out = os.system(cmd)
+      if out != 0:
+        sys.stdout.write('%s: Error executing %s \n'%(thread, cmd))
+
+      return out
+
     for umid, ncid in fileID.items():
         outdates = []
-        umfiles = glob('umnsaa_%s*'%umid)
+        umfiles = glob(os.path.join(path,'umnsaa_%s*'%umid))
         umfiles.sort()
+        if len(umfiles) == 0:
+          sys.stdout.write('No files are excisting in %s\n'%path)
+          return 1
         merge = True
         for umfile in umfiles:
             testfile = glob('um-%s-%s-%s_????????_????-????????_????.nc'\
@@ -45,23 +74,15 @@ def um2nc(expID, thread, *args, **kwargs):
             if not len(testfile):
                 merge = True
                 cmd='um2cdf %s'%umfile
-                print('%s: %s'%(thread, cmd))
-                ret = os.system(cmd)
-                if ret != 0:
-                  print('%s: Error moving'%thread)
-                  os.system("echo %s $PWD"%thread)
+                if exec(thread, cmd) != 0:
                   return 1
                 num = int(umfile.split('_')[-1].replace(umid,''))
                 outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
                 outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
                            outdate)
-                cmd2 = 'mv %s.nc %s' %(umfile, outfile)
+                cmd2 = 'mv %s.nc %s' %(os.path.basename(umfile), outfile)
                 outdates.append(outdate)
-                print('%s: %s'%(thread, cmd2))
-                ret = os.system(cmd2)
-                if ret != 0:
-                  print('%s: Error moving'%thread)
-                  os.system("echo %s $PWD"%thread)
+                if exec(thread, cmd2) != 0:
                   return 1
             else:
                 merge = False
@@ -72,11 +93,12 @@ def um2nc(expID, thread, *args, **kwargs):
                                                 outdates[0],outdates[-1])
             cdofiles = 'um-%s-%s-%s_'%(res, expID.replace('u-',''), ncid)
             cmd3 = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
-            print('%s: %s'%(thread, cmd3))
-            os.system(cmd3)
+            if exec(thread, cmd3) != 0:
+              return 1
+
             cmd4 = 'rm %s????????_????.nc'%cdofiles
-            print('%s: %s'%(thread, cmd4))
-            os.system(cmd4)
+            if exec(thread, cmd4) != 0:
+              return 1
     os.chdir(old_path)
     return 0
 
