@@ -421,7 +421,7 @@ if __name__ == '__main__':
     ending = '20170502'
     #
     #maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL','CPOL_masks.nc')
-    datadir = '/g/data2/rr5/vhl548/NEW_CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
+    datadir = '/g/data2/rr5/CPOL_radar/CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
     outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017.nc')
     metafile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_masks.nc')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
