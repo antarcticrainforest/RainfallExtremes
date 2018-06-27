@@ -55,8 +55,9 @@ def worker(func, expID, exitValue, args, kwargs):
 
 
 if __name__ == '__main__':
-  nameList = ['u-11100000', 'u-11100600', 'u-11101200', 'u-11101800', 
-      'u-11110000', 'u-11111200']
+
+  nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
+              'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
   func, args, kwargs = get_func(sys)
   jobs = []
   exitValue = Value('i',0)
@@ -80,6 +81,4 @@ if __name__ == '__main__':
     sys.stdout.write('%s has finished\n'\
                       %(os.path.basename(sys.argv[0])))
   sys.exit(exitValue.value)
-
-
 
