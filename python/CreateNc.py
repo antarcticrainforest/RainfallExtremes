@@ -2,7 +2,7 @@ import os, sys, re
 import numpy as np
 from datetime import datetime, timedelta
 from scipy.ndimage import gaussian_filter as bl
-from netCDF4 import Dataset as nc
+from netCDF4 import Dataset as nc, num2date, date2num
 import cv2
 
 def get_countours(array, kernel_size=3, sigma=0.15):
@@ -320,7 +320,13 @@ def concate(r, isf, prev_r, prev_isf):
 
     return np.ma.masked_invalid(np.ma.concatenate((prev_r, r))[:-len(prev_r)]),\
             np.ma.concatenate((prev_isf, isf))[:-len(prev_isf)]
-def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24), 
+def conv_time(timevar, reftime='Seconds since 1970-01-01 00:00:00'):
+    '''
+    Convert a netcdf timevariable to a given reference time
+    '''
+    dates = num2date(timevar[:], timevar.units)
+    return date2num(dates, reftime)
+def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
         varname='radar_estimated_rain_rate', metafile=None):
     '''
     This function gets radar rainfall data, stored in daily files and stores it
@@ -352,12 +358,11 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
         lon = fnc.variables['lon'][:]
         lat = fnc.variables['lat'][:]
     with nc(files[0]) as fnc:
-        meta['units'] = fnc.variables['time'].units
+        meta['units'] = 'Seconds since 1970-01-01 00:00:00'
         meta['missing'] = -9999.0
         meta['size'] = fnc.dimensions['time'].size
 
     #Get the mask
-    print(maskfile)
     if not (maskfile is None):
         with nc(maskfile) as fnc:
             #cpol dist
@@ -383,7 +388,7 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                     size = 0
                 else:
                     size = fnc['10min'].dimensions['time'].size
-                fnc['10min'].variables['time'][size:] = source.variables['time'][:]
+                fnc['10min'].variables['time'][size:] =  conv_time(source.variables['time'])
                 fnc['10min'].variables['rain_rate'][size:, :] = rain_rate
                 fnc['10min'].variables['rain_rate-flip'][...,size:] = rain_rate.transpose(1,2,0)
                 fnc['10min'].variables['ispresent'][size:] = source.variables['isfile'][:]
@@ -393,7 +398,7 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                     #Concatenate previous data and current field
                     rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
                     #Create area avg
-                    data, hsize = fnc.create_avg(rr, isfile, source.variables['time'][:],
+                    data, hsize = fnc.create_avg(rr, isfile, conv_time(source.variables['time']),
                                                  hour)
                     if hour in (1,3):
                         #Calculate contours also for 1h and 3h avg's
