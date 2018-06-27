@@ -23,8 +23,10 @@ def um2nc(expID, thread, *args, **kwargs):
     '''
     try:
         res = args[1]
+        setup='proto_RA1T'
     except IndexError:
         res = '0p44km'
+        setup='protoRA1T'
 
     fileID = dict(ph='rain', pg='geop_th', pf='pres_th', pe='qcl_th',
                   pd='qcf_th', pc='vert_cent', pb='vert_wind', pa='surf',
@@ -40,8 +42,8 @@ def um2nc(expID, thread, *args, **kwargs):
 
     old_path = os.path.dirname(__file__)
     path = os.path.join(os.getenv('HOME'), 'cylc-run', expID, 'share', 'cycle',
-                        umID, 'darwin', res, 'protoRA1T', 'um')
-    outpath = os.path.join(os.getenv('HOME'), 'Data', 'UM', 'RA1T', umID,
+                        umID, 'darwin', res, setup, 'um')
+    outpath = os.path.join(os.getenv('HOME'), 'Data', 'UM_1', 'RA1T', umID,
                            'darwin', res)
     if not os.path.isdir(outpath):
       if os.system('mkdir -p %s'%outpath) != 0:
@@ -73,15 +75,22 @@ def um2nc(expID, thread, *args, **kwargs):
             %(res, expID.replace('u-',''), ncid))
             if not len(testfile):
                 merge = True
-                cmd='um2cdf %s'%umfile
+                cmd = 'cp %s .'%umfile
                 if exec(thread, cmd) != 0:
                   return 1
+                cmd = 'um2cdf %s'%(os.path.basename(umfile))
+                exec(thread, cmd)
+                cmd = 'rm %s'%(os.path.basename(umfile))
+                exec(thread, cmd)
                 num = int(umfile.split('_')[-1].replace(umid,''))
                 outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
                 outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
                            outdate)
-                cmd2 = 'mv %s.nc %s' %(os.path.basename(umfile), outfile)
+                cmd2 = 'cdo sellonlatbox,130.024,131.58,-11.99,-11.083 %s.nc %s' %(os.path.basename(umfile), outfile)
                 outdates.append(outdate)
+                if exec(thread, cmd2) != 0:
+                  return 1
+                cmd2 = 'rm %s.nc'%(os.path.basename(umfile))
                 if exec(thread, cmd2) != 0:
                   return 1
             else:

@@ -19,10 +19,11 @@ vars=( 'ph' 'pg' 'pf' 'pe' 'pd' 'pc' 'pb' 'pa' 'pvera' 'pverb' 'pverc' )
 for v in ${vars[*]};do
 workdir=$(readlink -f $(dirname $0))
 modules=$(echo -e $modules)
+func=$1
 cat << EOF >> ~/.ens_jobs/pbs_submit-${v}.sh
 #!/bin/bash
 # set project
-#PBS -P w40
+#PBS -P w42
 # set stdout/stderr location
 #PBS -o ${jobdir%/}/${v}.out
 #PBS -e ${jobdir%/}/${v}.err
@@ -35,7 +36,7 @@ cat << EOF >> ~/.ens_jobs/pbs_submit-${v}.sh
 #PBS -q expressbw
 #PBS -l walltime=24:00:00
 #PBS -l mem=14GB
-#PBS -l ncpus=4
+#PBS -l ncpus=8
 module use /g/data3/hh5/public/modules
 module use ~access/modules
 module load pbs
@@ -43,7 +44,7 @@ module load conda/analysis3
 export PATH=$PATH:/projects/access/bin
 export PYTHONWARNINGS="ignore"
 cd ${workdir}
-python ${workdir%/}/Ensemble.py $@ ${v}
+python ${workdir%/}/Ensemble.py $1 ${v} ${@:2}
 EOF
 
 chmod +x ~/.ens_jobs/pbs_submit-${v}.sh
