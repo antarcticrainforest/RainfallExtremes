@@ -306,7 +306,7 @@ def get_prev(f1, varname, mask, hour):
     if os.path.isfile(previous_file):
         with nc(previous_file) as gnc:
             rr = gnc.variables[varname][-length:]
-            rr = np.ma.masked_invalid(mask*np.ma.masked_less(rr, 0.1).filled(0))
+            rr = mask*rr
             rr = np.ma.masked_greater(rr,300)
             ifile = gnc.variables['isfile'][-length:]
     else:
@@ -318,7 +318,7 @@ def concate(r, isf, prev_r, prev_isf):
     Concat data array
     '''
 
-    return np.ma.masked_invalid(np.ma.concatenate((prev_r, r))[:-len(prev_r)]),\
+    return np.ma.concatenate((prev_r, r))[:-len(prev_r)],\
             np.ma.concatenate((prev_isf, isf))[:-len(prev_isf)]
 def conv_time(timevar, reftime='Seconds since 1970-01-01 00:00:00'):
     '''
@@ -379,9 +379,7 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                 sys.stdout.write('\rAdding %s'%(os.path.basename(fname)))
                 sys.stdout.flush()
                 # Read data
-                rain_rate =  np.ma.masked_invalid(mask * np.ma.masked_less(
-                                                  source.variables[varname][:],
-                                                  0.1).filled(0))
+                rain_rate =  source.variables[varname][:]
                 rain_rate = np.ma.masked_greater(rain_rate, 350)
                 #Check if data has to be 'appended' or adde (first time step)
                 if tt == 0:
