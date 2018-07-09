@@ -15,7 +15,7 @@ def get_percentiles(fname, perc=list(range(1,100)), varname='rain-rate', thresh=
     burstf = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_burst.pkl')
     burstdf = pd.read_pickle(burstf)
     if resol == 'burst':
-      burst = burstdf['burst'].loc[burstdf['burst']==1].index
+      burst = burstdf['burst'].loc[burstdf['burst']>0].index
     elif resol == 'break':
       burst = burstdf['burst'].loc[burstdf['burst']==0].index
     else:
