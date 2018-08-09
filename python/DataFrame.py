@@ -113,8 +113,15 @@ def get_extremeTS(fname, group, thresh, present, varname='rain_rate'):
     data = []
     index = []
     with nc(fname) as ncf:
-        group = ncf.groups[group]
-        T = pd.DatetimeIndex(num2date(group.variables['time'][:],group.variables['time'].units))
+        try:
+            group = ncf.groups[group]
+        except KeyError:
+            group = ncf
+        try:
+            T = pd.DatetimeIndex(num2date(group.variables['time'][:],group.variables['time'].units))
+        except KeyError:
+            T = pd.DatetimeIndex(num2date(group.variables['t'][:],group.variables['t'].units))
+
         for t in range(len(T)):
             if 'ispresent' in group.variables.keys():
                 vnpr = 'ispresent'
