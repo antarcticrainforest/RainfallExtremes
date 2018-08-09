@@ -146,12 +146,12 @@ class NCreate(nc):
 
         '''
         chunks_shape = (meta['size'], len(lon), len(lat))
-        self.createDimension('lon', len(lon))
-        self.createDimension('lat', len(lat))
-        self.createVariable('lon', 'f', ('lon', ))
-        self.createVariable('lat', 'f', ('lat', ))
-        self.createVariable('cpol','f', ('lat', 'lon'))
-        self.createVariable('twp','f', ('lat', 'lon'))
+        self.createDimension('longitude', len(lon))
+        self.createDimension('latitude', len(lat))
+        self.createVariable('longitude', 'f', ('longitude', ))
+        self.createVariable('latitude', 'f', ('latitude', ))
+        self.createVariable('cpol','f', ('latitude', 'longitude'))
+        self.createVariable('twp','f', ('latitude', 'longitude'))
         for i, name in ((twp, 'twp'), (cpol, 'cpol')):
             self.variables[name][:] = i
             self.variables[name].units = '[ ]'
@@ -165,6 +165,10 @@ class NCreate(nc):
                 group_name = '10min'
                 present_unit = 'bool'
             group = self.createGroup(group_name)
+            group.createDimension('lon', len(lon))
+            group.createDimension('lat', len(lat))
+            group.createVariable('lon', 'f', ('lon', ))
+            group.createVariable('lat', 'f', ('lat', ))
             group.createDimension('time', None)
             group.createVariable('time', 'i', ('time', ))
 
@@ -206,20 +210,32 @@ class NCreate(nc):
                 group.variables['contours'].long_name = 'Contours of rainfall areas'
                 group.variables['contours'].missing_value = meta['missing']
 
+            group.variables['lon'][:] = lon
+            group.variables['lon'].units = 'degrees_east'
+            group.variables['lon'].axis = 'X'
+            group.variables['lon'].long_name = 'Longitude'
+            group.variables['lon'].standard_name = 'longitude'
+            group.variables['lon'].short_name = 'lon'
+            group.variables['lat'].units = 'degrees_north'
+            group.variables['lat'].axis = 'Y'
+            group.variables['lat'].long_name = 'Latitude'
+            group.variables['lat'].standard_name = 'latitude'
+            group.variables['lat'].short_name = 'lat'
+            group.variables['lat'][:] = lat
 
 
-        self.variables['lon'][:] = lon
-        self.variables['lon'].units = 'degrees_east'
-        self.variables['lon'].axis = 'X'
-        self.variables['lon'].long_name = 'Longitude'
-        self.variables['lon'].standard_name = 'longitude'
-        self.variables['lon'].short_name = 'lon'
-        self.variables['lat'].units = 'degrees_north'
-        self.variables['lat'].axis = 'Y'
-        self.variables['lat'].long_name = 'Latitude'
-        self.variables['lat'].standard_name = 'latitude'
-        self.variables['lat'].short_name = 'lat'
-        self.variables['lat'][:] = lat
+        self.variables['longitude'][:] = lon
+        self.variables['longitude'].units = 'degrees_east'
+        self.variables['longitude'].axis = 'X'
+        self.variables['longitude'].long_name = 'Longitude'
+        self.variables['longitude'].standard_name = 'longitude'
+        self.variables['longitude'].short_name = 'lon'
+        self.variables['latitude'].units = 'degrees_north'
+        self.variables['latitude'].axis = 'Y'
+        self.variables['latitude'].long_name = 'Latitude'
+        self.variables['latitude'].standard_name = 'latitude'
+        self.variables['latitude'].short_name = 'lat'
+        self.variables['latitude'][:] = lat
     @staticmethod
     def getSplit(length, maxn = 2**8):
         from functools import reduce
@@ -394,9 +410,9 @@ def main(datafolder, first, last, maskfile, out, timeavg=(1, 3, 6, 24),
                     #Get the data from the previous date, since avg is centered
                     prev_isfile, prev_rr = get_prev(fname, varname, mask, hour)
                     #Concatenate previous data and current field
-                    rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr, prev_isfile)
+                    rr, isfile = concate(rain_rate, source.variables['isfile'][:], prev_rr * mask, prev_isfile)
                     #Create area avg
-                    data, hsize = fnc.create_avg(rr, isfile, conv_time(source.variables['time']),
+                    data, hsize = fnc.create_avg(rr*mask, isfile, conv_time(source.variables['time']),
                                                  hour)
                     if hour in (1,3):
                         #Calculate contours also for 1h and 3h avg's
@@ -423,9 +439,10 @@ if __name__ == '__main__':
     starting = '19981206'
     ending = '20170502'
     #
-    #maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL','CPOL_masks.nc')
-    datadir = '/g/data2/rr5/CPOL_radar/CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
-    outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes','CPOL','CPOL_1998-2017.nc')
-    metafile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_masks.nc')
+    maskfile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL_masks.nc')
+    #datadir = '/g/data2/rr5/CPOL_radar/CPOL_level_2/RADAR_ESTIMATED_RAIN_RATE'
+    datadir = '/g/data2/rr5/CPOL_radar/old_version/RADAR_ESTIMATED_RAIN_RATE'
+    outfile = os.path.join(os.getenv('HOME'),'Data', 'Extremes', 'CPOL_1998-2017-old.nc')
+    metafile = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL_masks.nc')
     main(datadir, datetime.strptime(starting, '%Y%m%d'),
-         datetime.strptime(ending, '%Y%m%d'), None, outfile, metafile=metafile)
+         datetime.strptime(ending, '%Y%m%d'), metafile, outfile, metafile=metafile)
