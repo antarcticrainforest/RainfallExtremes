@@ -5,14 +5,15 @@ import os,sys,gc
 from matplotlib import pyplot as plt
 
 def get_percentiles(fname, perc=list(range(1,100)), varname='rain-rate', thresh=75,
-    out=os.path.join(os.getenv('HOME'),'Data','Extremes','CPOL'),resol='all',):
+    out=os.path.join(os.getenv('HOME'),'Data','Extremes'),resol='all',):
     '''
     Calculate percentile in a netcdf-file
     '''
+    burstf = os.path.join(out, 'CPOL_burst.pkl')
     out = os.path.join(out,'CPOL_TIWI_Percentiles.nc')
-    groups = ('10min', '1h', '3h', '6h', '24h')
+    #groups = ('10min', '1h', '3h', '6h', '24h')
+    groups = ('10min',)
     grnum = np.array([10, 60, 3*60, 6*60, 24*60])
-    burstf = os.path.join(os.getenv('HOME'), 'Data', 'Extremes', 'CPOL', 'CPOL_burst.pkl')
     burstdf = pd.read_pickle(burstf)
     if resol == 'burst':
       burst = burstdf['burst'].loc[burstdf['burst']>0].index
@@ -66,26 +67,34 @@ def get_percentiles(fname, perc=list(range(1,100)), varname='rain-rate', thresh=
               sys.stdout.write('\r Adding %s to %s' %(gr, os.path.basename(out)))
               sys.stdout.flush()
               name = 'P%s'%gr
-              group = fn.groups[gr]
-              if gr == '10min':
-                  present = group.variables['ispresent'][:] > 0.
-              else:
-                  present = group.variables['isfile'][:] > thresh
-              time = num2date(group.variables['time'][present].astype('i'), group.variables['time'].units)
+              try :
+                group = fn.groups[gr]
+              except KeyError:
+                group = fn
+              present = group.variables['ispresent'][:] > 0.
+              try:
+                time = num2date(group.variables['time'][:], group.variables['time'].units)[present]
+              except KeyError:
+                time = num2date(group.variables['t'][:], group.variables['t'].units)[present]
+
               btime = burst.to_pydatetime()
               pr2 = [True if t in btime else False for t in time]
               data = np.ma.masked_outside(group.variables[varname][present,:][pr2],0.1,100000)
               DF[gr]= np.nanpercentile(data.filled(np.nan),perc)
               del data, present
               gc.collect()
-          h5.groups[resol].variables[varname][:] = DF.values
+          try:
+            h5.groups[resol].variables[varname][:] = DF.values
+          except IndexError:
+            h5.groups[resol].variables[varname][:,0] = DF.values
+
           hdf5.put(resol, DF)
 
 
 if __name__ == '__main__':
-    filename = os.path.join(os.getenv('HOME'),'Data','Extremes','CPOL','CPOL_TIWI_1998-2017.nc')
+    filename = os.path.join(os.getenv('HOME'),'Data','Extremes','CPOL_TIWI_1998-2017.nc')
     percs = list(range(0,100))+[99.9,99.99,99.999,99.9999,100]
     resol = 'all'
     for resol in ('all', 'break', 'burst'):
-      print('Addeing %s'%resol)
-      get_percentiles(filename, perc=percs, resol=resol)
+      print('Adding %s'%resol)
+      get_percentiles(filename, perc=percs, resol=resol, varname='lsrain')
