@@ -53,12 +53,10 @@ def worker(func, expID, exitValue, args, kwargs):
      sys.stdout.write('%s has succeeded\n'%name)
      exitValue.value -= 1
 
-
-if __name__ == '__main__':
-
-  nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
-              'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
-  func, args, kwargs = get_func(sys)
+def process_worker(nameList, func, args, kwargs):
+  '''
+   Distributes the jobs from nameList to each process
+  '''
   jobs = []
   exitValue = Value('i',0)
   for expID in nameList:
@@ -73,7 +71,6 @@ if __name__ == '__main__':
     if not active:
       break
     time.sleep(1)
-  print(exitValue.value)
   if exitValue.value != 0:
     sys.stdout.write('%s had %i failed processes\n'\
                       %(os.path.basename(sys.argv[0]), exitValue.value))
@@ -82,3 +79,10 @@ if __name__ == '__main__':
                       %(os.path.basename(sys.argv[0])))
   sys.exit(exitValue.value)
 
+    
+
+if __name__ == '__main__':
+
+  nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
+              'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
+  process_worker(nameList, *get_func(sys))
