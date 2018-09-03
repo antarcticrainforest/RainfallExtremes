@@ -28,6 +28,17 @@ def um2nc(expID, thread, *args, **kwargs):
         res = '0p44km'
         setup='protoRA1T'
 
+    try:
+        remap = kwargs['remap']
+    except KeyError:
+        remap = '2.5km'
+
+    try:
+        remapFile = kwargs['remapFile']
+    except IndexError:
+        remapFile = os.path.join(os.environ['HOME'],'Data',
+                                 'CPOL_TIWI_2.5kgrid.txt')
+
     fileID = dict(ph='rain', pg='geop_th', pf='pres_th', pe='qcl_th',
                   pd='qcf_th', pc='vert_cent', pb='vert_wind', pa='surf',
                   pvera='vera', pverb='verb', pverc='verc')
@@ -71,8 +82,8 @@ def um2nc(expID, thread, *args, **kwargs):
           return 1
         merge = True
         for umfile in umfiles:
-            testfile = glob('um-%s-%s-%s_????????_????-????????_????.nc'\
-            %(res, expID.replace('u-',''), ncid))
+            testfile = glob('um-%s-%s-%s_????????_????-????????_????-%s.nc'\
+            %(res, expID.replace('u-',''), ncid, remap))
             if not len(testfile):
                 merge = True
                 cmd = 'cp %s .'%umfile
@@ -84,29 +95,40 @@ def um2nc(expID, thread, *args, **kwargs):
                 exec(thread, cmd)
                 num = int(umfile.split('_')[-1].replace(umid,''))
                 outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
-                outfile = 'um-%s-%s-%s_%s.nc'%(res, expID.replace('u-',''), ncid,
-                           outdate)
-                cmd2 = 'cdo sellonlatbox,130.024,131.58,-11.99,-11.083 %s.nc %s' %(os.path.basename(umfile), outfile)
+                outfile = 'um-%s-%s-%s_%s-%s.nc'%(res,
+                                                  expID.replace('u-',''),
+                                                  ncid,
+                                                  outdate,
+                                                  remap)
+                #cmd = 'cdo sellonlatbox,130.024,131.58,-11.99,-11.083 %s.nc %s'\
+                #       %(os.path.basename(umfile), outfile)
+                cmd = 'cdo remapbil,%s %s.nc %s'%(remapFile,
+                                                  os.path.basename(umfile),
+                                                  outfile)
                 outdates.append(outdate)
-                if exec(thread, cmd2) != 0:
+                if exec(thread, cmd) != 0:
                   return 1
-                cmd2 = 'rm %s.nc'%(os.path.basename(umfile))
-                if exec(thread, cmd2) != 0:
+                cmd = 'rm %s.nc'%(os.path.basename(umfile))
+                if exec(thread, cmd) != 0:
                   return 1
             else:
                 merge = False
 
         outdates.sort()
         if merge:
-            mergefile = 'um-%s-%s-%s_%s-%s.nc'%(res, expID.replace('u-',''), ncid,
-                                                outdates[0],outdates[-1])
+            mergefile = 'um-%s-%s-%s_%s-%s-%s.nc'%(res,
+                                                   expID.replace('u-',''),
+                                                   ncid,
+                                                   outdates[0],
+                                                   outdates[-1],
+                                                   remap)
             cdofiles = 'um-%s-%s-%s_'%(res, expID.replace('u-',''), ncid)
-            cmd3 = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
-            if exec(thread, cmd3) != 0:
+            cmd = 'cdo mergetime %s* %s'%(cdofiles, mergefile)
+            if exec(thread, cmd) != 0:
               return 1
 
-            cmd4 = 'rm %s????????_????.nc'%cdofiles
-            if exec(thread, cmd4) != 0:
+            cmd = 'rm %s????????_????-%s.nc'%(cdofiles, remap)
+            if exec(thread, cmd) != 0:
               return 1
     os.chdir(old_path)
     return 0
