@@ -1,4 +1,4 @@
-from tint_2 import Cell_tracks, animate
+from tint import Cell_tracks, animate
 
 import os, pandas as pd
 from itertools import groupby
@@ -56,37 +56,85 @@ def get_times(start, end, time):
     end = date2num([end], time.units)
     e_idx = np.argmin(np.fabs(time[:] - end))+1
     s_idx = np.argmin(np.fabs(time[:] - start))
-    
+
     return [(s_idx,e_idx)]
 
+def creat_tracks(dataF,
+                 start=None,
+                 end=None,
+                 overwrite=True,
+                 ani=True,
+                 varname='lsrain',
+                 timename='t'
+                 lonname='lon',
+                 latname='lat'
+                 group=None):
+    '''
+    Create tintV2 tracks 
 
-if __name__ == '__main__':
-    dataF = os.path.join(os.getenv("HOME"),'Data','Extremes','CPOL','CPOL_1998-2017.nc')
+    Arguments : 
+        dataF (str) : the netCDF file that contains the rainfall data
+    Key word args:
+        start : If start is given first time step of the tracking, if None 
+                start is the first time step of the data.
+                Format should be 'YYYY-mm-dd hh:MM' (default : None)
+        end  : If send is given last time step of the tracking, if None 
+                end is the last time step of the data (
+                Format should be 'YYYY-mm-dd hh:MM' default : None)
+        overwrite : If a track already exist, delete it an crate a new one,
+                    (dfault : True)
+        ani  : Create a movie of the tracked systems
+    '''
+
     trackdir = os.path.join(os.path.dirname(dataF),'Tracking')
-    overwrite = True
-    start = '2006-11-10 00:00'
-    end = '2006-11-18 18:00'
-    with nc(dataF) as ncf:
-        if type(start) == type('a') and type(end) == type('a'):
-            slices = get_times(start, end, ncf['10min'].variables['time'])
-        else:
-            slices = spl(ncf['10min'].variables['ispresent'][:],
-                         ncf['10min'].variables['time'][:])
+    try:
+        os.mkdirs(os.path.join(trackdir, 'video'))
+    except FileExistsError:
+        pass
 
-        lats = ncf.variables['lat'][:]
-        lons = ncf.variables['lon'][:]
-        x = lons[int(117/2)]
-        y = lats[int(117/2)]
+    try
+    #start = '2006-11-10 00:00'
+    #end = '2006-11-18 18:00'
+    with nc(dataF) as ncf:
+        if group is not None:
+            gr = ncf[group]
+        else:
+            gr = ncf
+
+        if type(start) == type('a') and type(end) == type('a'):
+            slices = get_times(start, end, g.variables[timename])
+        else:
+            try:
+                slices = spl(g.variables['ispresent'][:],
+                             g.variables[timename][:])
+            except KeyError:
+                start = num2date(g.variables[timename],
+                                 g.variables[timename].units)[0]
+                end  = num2date(g.variables[timename],
+                                 g.variables[timename].units)[-1]
+                slices = get_time(start.strftime('%Y-%m-%d %h:%M'),
+                                  end.strftime('%Y-%m-%d %h:%M'),
+                                  g.variables[timename])
+
+        lats = ncf.variables[latname][:]
+        lons = ncf.variables[lonname][:]
+        if len(lats.shape) == 2:
+            lats = lats[:,0]
+        if len(lons.shape) == 2:
+            lons = lons[0,:]
+
+        x = lons[len(lons)//2]
+        y = lats[len(lats)//2)]
         grids = []
         for s in slices:
             ani = False
-            gr = (i for i in get_grids(ncf['10min'], s, lons, lats))
-            anim = (i for i in get_grids(ncf['10min'], s, lons, lats))
-            start = num2date(ncf['10min'].variables['time'][s[0]],
-                             ncf['10min'].variables['time'].units)
+            gr = (i for i in get_grids(g, s, lons, lats))
+            anim = (i for i in get_grids(g, s, lons, lats))
+            start = num2date(g.variables[timename][s[0]],
+                             g.variables[timename].units)
 
-            end = num2date(ncf['10min'].variables['time'][s[-1]],
-                           ncf['10min'].variables['time'].units)
+            end = num2date(g.variables[timename][s[-1]],
+                           g.variables[timename].units)
             suffix = '%s-%s'%(start.strftime('%Y_%m_%d_%H'), end.strftime('%Y_%m_%d_%H'))
             tracks_obj = Cell_tracks()
             tracks_obj.params['MIN_SIZE'] = 4
@@ -114,3 +162,6 @@ if __name__ == '__main__':
                         overwrite=overwrite, dt = 9.5)
             #break
 
+if __name__ == '__main__':
+    dataF = os.path.join(os.getenv("HOME"),'Data','Extremes','CPOL','CPOL_1998-2017.nc')
+    overwrite = True
