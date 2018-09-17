@@ -72,7 +72,7 @@ def creat_tracks(dataF,
                  start=None,
                  end=None,
                  overwrite=True,
-                 ani=True,
+                 animate=True,
                  varname='lsrain',
                  timename='t',
                  lonname='lon',
@@ -100,7 +100,7 @@ def creat_tracks(dataF,
     sys.stdout.write('Creating tracks for %s\n'%dataF)
     try:
         os.makedirs(os.path.join(trackdir, 'video'))
-    except FileExistsError:
+    except:
         pass
 
     #start = '2006-11-10 00:00'
@@ -166,7 +166,7 @@ def creat_tracks(dataF,
                 except FileNotFoundError:
                     ani = False
             '''
-            if ani:
+            if ani and animate:
                 animate(tracks_obj, anim,
                         os.path.join(trackdir,'video', 'tint_tracks_%s.mp4'%suffix),
                         overwrite=overwrite, dt = 9.5, **kwargs)
@@ -204,13 +204,15 @@ if __name__ == '__main__':
                  '20061110T0600Z', '20061110T1200Z', '20061110T1800Z',
                  '20061111T0000Z', '20061111T1200Z')
     remap_res = '2.5km'
+    animate = False
     Simend = '20061119_0600-%s'%remap_res
     umfiles, start, end = get_mintime(ensembles, Simend)
-    #creat_tracks(WOHFv1, start, end, latname='lat', timename='time',
-    #             lonname='lon', keep_frames=True)
+    creat_tracks(WOHFv1, start, end, latname='lat', timename='time',
+                 lonname='lon', keep_frames=True, animate=animate)
+    #sys.exit()
     for umf133, umf044 in umfiles:
         for fname in (umf133, umf044):
             creat_tracks(fname, start, end, latname='lat',
-                        lonname='lon', keep_frames=True)
+                        lonname='lon', keep_frames=True, animate=animate)
 
 
