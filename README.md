@@ -10,5 +10,5 @@ Since the late 1980s the thunderstorm has been the subject of many meteorologica
 
 The following collection of [jupyter-slides](http://www.slideviper.oquanta.info/tutorial/slideshow_tutorial_slides.html#/4 "Jupyter Slides Tutorial") shows the results of the above mentioned model study:
 
-- Comparing simulated rainfall to observations: Area averaged rainfall and diurnal cycle. Timing of rainfall and distribution of extreme events. 
+- Comparing simulated rainfall to observations: Area averaged rainfall and diurnal cycle. Timing of rainfall and distribution of extreme events. [Presentation](minutes_1.slides.html)
 
