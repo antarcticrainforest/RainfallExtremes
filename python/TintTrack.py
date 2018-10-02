@@ -207,9 +207,10 @@ if __name__ == '__main__':
     animate = False
     Simend = '20061119_0600-%s'%remap_res
     umfiles, start, end = get_mintime(ensembles, Simend)
-    creat_tracks(WOHFv1, start, end, latname='lat', timename='time',
-                 lonname='lon', keep_frames=True, animate=animate)
-    #sys.exit()
+    start, end = datetime(1998,12,6,0,0), datetime(2008,3,10,0,0)
+    creat_tracks(dataF, start, end, latname='latitude', timename='t',
+                 lonname='longitude', keep_frames=True, animate=animate)
+    sys.exit()
     for umf133, umf044 in umfiles:
         for fname in (umf133, umf044):
             creat_tracks(fname, start, end, latname='lat',
