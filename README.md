@@ -11,6 +11,7 @@ Since the late 1980s the thunderstorm has been the subject of many meteorologica
 
 The following collection of [jupyter-slides](http://www.slideviper.oquanta.info/tutorial/slideshow_tutorial_slides.html#/4 "Jupyter Slides Tutorial") shows the results of the above mentioned model study:
 
-- Comparing simulated rainfall to observations: Area averaged rainfall and diurnal cycle. Timing of rainfall and distribution of extreme events. [Presentation](slides/minutes_1.slides.html)
-- Investigation of Storm-Tracks: Storm duration, Intensity and Size. [Presentation](slides/minutes_2.slides.html)
+- Comparing simulated rainfall to observations: Area averaged rainfall and diurnal cycle. Timing of rainfall and distribution of extreme events. [Presentation](https://antarcticrainforest.github.io/RainfallExtremes/slides/minutes_1.slides.html)
+- Investigation of Storm-Tracks: Storm duration, Intensity and Size. [Presentation](https://antarcticrainforest.github.io/RainfallExtremes/slides/minutes_2.slides.html) 
+- Including more observational periods to the Storm-Track analysis via bootstrapping different periods [Presentation](https://antarcticrainforest.github.io/RainfallExtremes/slides/minutes_3.slides.html)
 
