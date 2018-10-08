@@ -16,15 +16,15 @@ def test(expID, thread):
   time.sleep(4*random.random())
   return 0 #random.randint(0,1)
 
-def um2nc(expID, thread, *args, **kwargs):
+def um2nc(expID, thread, **kwargs):
     '''
     Convert all um output to netcdf-file format and rename the files 
     to a meaningful name
     '''
     try:
-        res = args[1]
-        setup='proto_RA1T'
-    except IndexError:
+        res = kwargs['res']
+        setup='protoRA1T'
+    except KeyError:
         res = '0p44km'
         setup='protoRA1T'
 
@@ -35,16 +35,16 @@ def um2nc(expID, thread, *args, **kwargs):
 
     try:
         remapFile = kwargs['remapFile']
-    except IndexError:
+    except KeyError:
         remapFile = os.path.join(os.environ['HOME'],'Data',
                                  'CPOL_TIWI_2.5kgrid.txt')
 
     fileID = dict(ph='rain', pg='geop_th', pf='pres_th', pe='qcl_th',
-                  pd='qcf_th', pc='vert_cent', pb='vert_wind', pa='surf',
-                  pvera='vera', pverb='verb', pverc='verc')
+                  pd='qcf_th', pc='vert_cent', pb='vert_wind', pa='surf')
+                  #pvera='vera', pverb='verb', pverc='verc')
     try:
-      fileID = {args[0]:fileID[args[0]]}
-    except IndexError:
+      fileID = {kwargs['fileID']:fileID[kwargs['fileID']]}
+    except KeyError:
       fileID = fileID
 
     expID_tmp = expID.replace('u-','u-2006')
