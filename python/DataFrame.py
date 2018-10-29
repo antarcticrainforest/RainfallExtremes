@@ -2,6 +2,11 @@ import pandas as pd
 from itertools import tee, repeat, chain, groupby
 from datetime import  timedelta
 import numpy as np
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(os.path.basename(__file__))
 
 def convScale(Series, method, freq, *args):
     """
@@ -187,6 +192,79 @@ def get_shapes(colors, dates, opacity=0.2):
             shapes.append(tmp)
     return shapes
 
+def get_rainIndex(df, lon, lat, time, method='center'):
+    '''
+    Get all the indices for a raining centriod in a given grid
+
+    Parameters:
+        df (pd-dataframe) : dataframe containing the tracks
+        lon (nd-array) : array containing the longitudes
+        lat (nd-array) : array containing the latitudes
+
+    Keywords:
+        method: the index that is taken as the central point
+                options (center: central point of the track
+                         mean :  point with highest mean rain-rate
+                         max  :  point with highest max rain-rate)
+
+    Returns:
+        index : array of inidces that represent the central storm of the track
+
+    '''
+
+
+
+    if method.lower() == 'center' or method.lower() == 'centre':
+        idx = df.index[len(df) // 2]
+
+    elif method.lower() == 'mean' or method.lower() == 'max':
+        idx = df[method.lower()].idxmax()
+
+    else:
+        log.warning('Method not implemented falling back to center')
+        idx = df.index[len(df) // 2]
+    try:
+        s_lon = np.fabs(lon.values - df.loc[idx]['lon']).argmin()
+        s_lat = np.fabs(lat.values - df.loc[idx]['lat']).argmin()
+    except :
+        s_lon = np.fabs(lon - df.loc[idx]['lon']).argmin()
+        s_lat = np.fabs(lat - df.loc[idx]['lat']).argmin()
+
+    radius = df.loc[idx]['area'] // 2
+
+    T = (pd.DatetimeIndex(time.values) - df.loc[idx].time).total_seconds()
+    lons = (max(0, s_lon - radius), min(s_lon + radius, len(lon)))
+    lats = (max(0, s_lat - radius), min(s_lat + radius, len(lat)))
+
+    try:
+        return np.fabs(T).argmin(), lats, lons
+    except:
+        return np.fabs(T).argmin(), lats, lons
+
+
+if __name__ == '__main__':
+
+    trackDir = '/home/unimelb.edu.au/mbergemann/Data/Extremes/UM/darwin/RA1T/20061109T1200Z/darwin/0p44km/Tracking'
+    trackFile = os.path.join(trackDir,'tint_tracks_2006_11_09_12-2006_11_19_11.pkl')
+
+    umFile = os.path.join('/home/unimelb.edu.au/mbergemann/Data/Extremes/UM/darwin/RA1T',
+                          'um-0p44km-11091200-rain_20061109_1200-20061119_0600-2.5km.nc')
+
+    import xarray as xr
+    f = xr.open_dataset(umFile)
+    lon = f.coords['lon']
+    lat = f.coords['lat']
+    t = f['lsrain']
+    time = f['t']
+    tracks = pd.read_pickle(trackFile)
+    ii = 0
+    for uid in np.unique(np.array(tracks.index.get_level_values('uid')).astype('i')):
+        df = tracks.xs(str(uid), level='uid')
+        tidx, lats, lons = get_rainIndex(df, lon, lat, time, 'center')
+        print(t[tidx,0,lats[0]:lats[-1], lons[0]:lons[-1]].shape)
+        ii += 1
+        if ii > 3:
+            break
 
 
 
