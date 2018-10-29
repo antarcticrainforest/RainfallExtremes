@@ -3,12 +3,25 @@ Python module with functions that does the Ensemble manipulation
 '''
 from datetime import datetime, timedelta
 from glob import glob
+import importlib
+from itertools import product
 import os
 import random
 import re
 import sys
 import time
+import warnings
 
+warnings.filterwarnings('ignore', category=FutureWarning)
+from h5py import File
+import numpy as np
+import pandas as pd
+import xarray as xr
+warnings.filterwarnings('default', category=FutureWarning)
+
+
+from DataFrame import get_rainIndex
+import storm_prop
 
 def test(expID, thread):
   '''
@@ -19,6 +32,93 @@ def test(expID, thread):
   time.sleep(4*random.random())
   return 0 #random.randint(0,1)
 
+def get_storm_prop(expID, thread, **kwargs):
+    '''
+    Calculate properties
+    '''
+
+    try:
+        funcn = kwargs['func']
+    except KeyError:
+        funcn = 'bflux'
+
+    func = getattr(storm_prop, funcn)
+    #Get the treck data first
+    try:
+        basedir = os.path.expanduser(kwargs['basedir'])
+    except KeyError:
+        basedir = os.path.expanduser('~/Data/Extremes/UM/darwin/RA1T')
+
+    expDir = datetime.strptime(expID, 'u-%m%d%H%M').strftime('2006%m%dT%H%MZ')
+    um133_trackf = os.path.join(basedir, expDir, 'darwin', '1p33km', 'Tracking',
+                               '*.pkl')
+
+    um044_trackf = os.path.join(basedir, expDir, 'darwin', '0p44km', 'Tracking',
+                               '*.pkl')
+    
+    track_prop ={'UM044': glob(um044_trackf)[0], 'UM133': glob(um133_trackf)[0]}
+
+    lookup = {'UM044': '0p44km' , 'UM133': '1p33km'}
+    #Then get the netCDF files
+    ncfiles = {'UM044': {}, 'UM133': {}}
+    for res in ncfiles.keys():
+        for ncf in glob(os.path.join(basedir,'um-%s-%s-*.nc'%(lookup[res],
+                                                              expID.strip('u-')))):
+            txt = os.path.basename(ncf).strip('um-%s-%s-'%(lookup[res], expID)).split('_')
+            v = '_'.join([vv for vv in txt[:2] if not vv.startswith('2')])
+            ncfiles[res][v] = ncf
+
+    outF = os.path.join(basedir,'Storm_prop-%s.hdf5'%expID.strip('u-'))
+
+    with File(outF, 'a') as h5:
+
+        for res, trackf in track_prop.items():
+
+            with xr.open_dataset(ncfiles[res]['vert_cent']) as f:
+                time = pd.DatetimeIndex(f['t'].values)
+                lon = f['lon'].values
+                lat = f['lat'].values
+                p = f['p'].values
+
+            tracks = pd.read_pickle(trackf)
+            uids = np.array(tracks.index.get_level_values('uid')).astype('i')
+            uids = np.unique(uids)
+            uids.sort()
+
+            try:
+                h5['/p'][:] = p
+            except KeyError:
+                h5['/p'] = p
+
+            try:
+                h5['/%s/%s/uids'%(res,expID.strip('u-'))][:]=uids
+            except KeyError:
+                h5['/%s/%s/uids'%(res,expID.strip('u-'))]=uids
+            for ii, uid in enumerate(uids):
+                df = tracks.xs(str(uid), level='uid')
+                out = func(ncfiles[res], get_rainIndex(df, lon, lat, time, 'mean'),
+                           **kwargs)
+                try:
+                    h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, funcn)][:]=out[0]
+                except KeyError:
+                    h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, funcn)]=out[0]
+                for tt, fn in enumerate(('lat', 'lon', 'time')):
+                    try:
+                        h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)][:]=out[tt+1]
+                    except KeyError:
+                        h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)]=out[tt+1]
+
+                    setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                            'units', 'seconds since 1970-01-01 00:00:00')
+                    try:
+                        setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                                'offset', int(kwargs['tdelta']))
+                    except KeyError:
+                        setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                                'offset', 1)
+
+
+    return 0
 def um2nc(expID, thread, **kwargs):
     '''
     Convert all um output to netcdf-file format and rename the files 
