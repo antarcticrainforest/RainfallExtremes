@@ -1,10 +1,13 @@
 '''
 Python module with functions that does the Ensemble manipulation
 '''
-from glob import glob
 from datetime import datetime, timedelta
-import os, sys
-import time, random
+from glob import glob
+import os
+import random
+import re
+import sys
+import time
 
 
 def test(expID, thread):
@@ -25,8 +28,21 @@ def um2nc(expID, thread, **kwargs):
         res = kwargs['res']
         setup='protoRA1T'
     except KeyError:
-        res = '0p44km'
-        setup='protoRA1T'
+        res = '1p33km'
+        setup='proto_RA1T'
+    try:
+       start = datetime.strptime(kwargs['start'], '%Y%m%d%H%M')
+    except KeyError:
+       start = datetime(1000, 1, 1, 0, 0)
+    except ValueError:
+       raise RuntimeError('Error date must be of format %Y%m%d%H%M')
+    try:
+       end = datetime.strptime(kwargs['end'], '%Y%m%d%H%M')
+    except KeyError:
+       end = datetime(9999, 1, 1, 0, 0)
+    except ValueError:
+       raise RuntimeError('Error date must be of format %Y%m%d%H%M')
+    setup = {'4km':'proto_RA1T', '1p33km':'proto_RA1T', '0p44km':'protoRA1T'}[res]
 
     try:
         remap = kwargs['remap']
@@ -34,7 +50,7 @@ def um2nc(expID, thread, **kwargs):
         remap = '2.5km'
 
     try:
-        remapFile = kwargs['remapFile']
+        remapFile = os.path.expanduser(kwargs['remapFile'])
     except KeyError:
         remapFile = os.path.join(os.environ['HOME'],'Data',
                                  'CPOL_TIWI_2.5kgrid.txt')
@@ -46,7 +62,7 @@ def um2nc(expID, thread, **kwargs):
       fileID = {kwargs['fileID']:fileID[kwargs['fileID']]}
     except KeyError:
       fileID = fileID
-
+    
     expID_tmp = expID.replace('u-','u-2006')
     date = datetime.strptime(expID_tmp, 'u-%Y%m%d%H%M')
     umID = date.strftime('%Y%m%dT%H%MZ')
@@ -75,13 +91,18 @@ def um2nc(expID, thread, **kwargs):
 
     for umid, ncid in fileID.items():
         outdates = []
-        umfiles = glob(os.path.join(path,'umnsaa_%s*'%umid))
+        umfiles = [ f for f in glob(os.path.join(path,'umnsaa_%s*'%umid)) if '.nc' not in f]
         umfiles.sort()
         if len(umfiles) == 0:
           sys.stdout.write('No files are excisting in %s\n'%path)
           return 1
         merge = True
         for umfile in umfiles:
+            dt = int(re.findall(r'\d+', umfile)[-1])
+            if date+timedelta(hours=dt) < start:
+                  continue
+            if date+timedelta(hours=dt) > end:
+                  break
             testfile = glob('um-%s-%s-%s_????????_????-????????_????-%s.nc'\
             %(res, expID.replace('u-',''), ncid, remap))
             if not len(testfile):
@@ -93,16 +114,17 @@ def um2nc(expID, thread, **kwargs):
                 exec(thread, cmd)
                 cmd = 'rm %s'%(os.path.basename(umfile))
                 exec(thread, cmd)
-                num = int(umfile.split('_')[-1].replace(umid,''))
-                outdate = (date + timedelta(hours=num)).strftime('%Y%m%d_%H%M')
+                outdate = (date + timedelta(hours=dt)).strftime('%Y%m%d_%H%M')
                 outfile = 'um-%s-%s-%s_%s-%s.nc'%(res,
                                                   expID.replace('u-',''),
                                                   ncid,
                                                   outdate,
                                                   remap)
-                #cmd = 'cdo sellonlatbox,130.024,131.58,-11.99,-11.083 %s.nc %s'\
-                #       %(os.path.basename(umfile), outfile)
-                cmd = 'cdo remapbil,%s %s.nc %s'%(remapFile,
+                if remapFile is None:
+                     cmd = 'cdo sellonlatbox,130.024,131.58,-11.99,-11.083 %s.nc %s'\
+                         %(os.path.basename(umfile), outfile)
+                else:
+                     cmd = 'cdo remapbil,%s %s.nc %s'%(remapFile,
                                                   os.path.basename(umfile),
                                                   outfile)
                 outdates.append(outdate)
