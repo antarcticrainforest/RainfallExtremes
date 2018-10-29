@@ -232,7 +232,7 @@ def get_rainIndex(df, lon, lat, time, method='center'):
 
     radius = df.loc[idx]['area'] // 2
 
-    T = (pd.DatetimeIndex(time.values) - df.loc[idx].time).total_seconds()
+    T = (time - df.loc[idx].time).total_seconds()
     lons = (max(0, s_lon - radius), min(s_lon + radius, len(lon)))
     lats = (max(0, s_lat - radius), min(s_lat + radius, len(lat)))
 
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     ii = 0
     for uid in np.unique(np.array(tracks.index.get_level_values('uid')).astype('i')):
         df = tracks.xs(str(uid), level='uid')
-        tidx, lats, lons = get_rainIndex(df, lon, lat, time, 'center')
+        tidx, lats, lons = get_rainIndex(df, lon, lat, pd.DatetimeIndex(time), 'center')
         print(t[tidx,0,lats[0]:lats[-1], lons[0]:lons[-1]].shape)
         ii += 1
         if ii > 3:
