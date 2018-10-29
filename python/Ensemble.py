@@ -23,21 +23,10 @@ Usage:
         for arg in sys.argv[2:]:
             try:
                 key, value = arg.split('=')
-                try:
-                    kwargs[key] = int(value)
-                except ValueError:
-                    try:
-                        kwargs[key] = float(value)
-                    except ValueError:
-                        kwargs[key] = value
+                key = key.replace('-','')
+                kwargs[key] = value
             except ValueError:
-                try:
-                    args.append(int(arg))
-                except ValueError:
-                    try:
-                        args.append(float(arg))
-                    except ValueError:
-                        args.append(arg)
+               args.append(arg)
     except IndexError:
         pass
 
@@ -83,6 +72,8 @@ def process_worker(nameList, func, args, kwargs):
 
 if __name__ == '__main__':
 
-  nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
-              'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
+  #nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
+  #            'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
+  #nameList = ('u-11100000', 'u-11101200')
+  nameList = ('u-11091200',)
   process_worker(nameList, *get_func(sys))
