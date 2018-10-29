@@ -2,8 +2,10 @@ from multiprocessing import Process, Value, current_process
 import sys
 import os
 import time
+
+import Worker
+
 def get_func(ipt):
-    from Worker import um2nc, test
     exit='''
 Usage:
     %s func_name [args] [kwargs]
@@ -12,10 +14,12 @@ Usage:
         funcn = sys.argv[1]
     except IndexError:
         sys.exit(exit)
-    possibles = globals().copy()
-    possibles.update(locals())
-    method = possibles.get(funcn)
-    if not method:
+    #possibles = globals().copy()
+    #possibles.update(locals())
+    #method = possibles.get(funcn)
+    try:
+        method = getattr(Worker, funcn)
+    except AttributeError:
         raise NotImplementedError("Method %s not implemented" % funcn)
     args = []
     kwargs = {}
@@ -72,8 +76,8 @@ def process_worker(nameList, func, args, kwargs):
 
 if __name__ == '__main__':
 
-  #nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
-  #            'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
+  nameList = ['u-11091200',  'u-11091800',  'u-11100000',  'u-11100600',
+              'u-11101200',  'u-11101800',  'u-11110000',  'u-11111200']
   #nameList = ('u-11100000', 'u-11101200')
-  nameList = ('u-11091200',)
+  #nameList = ('u-11091200',)
   process_worker(nameList, *get_func(sys))
