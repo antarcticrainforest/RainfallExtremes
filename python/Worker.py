@@ -68,7 +68,7 @@ def get_storm_prop(expID, thread, **kwargs):
             v = '_'.join([vv for vv in txt[:2] if not vv.startswith('2')])
             ncfiles[res][v] = ncf
 
-    outF = os.path.join(basedir,'Storm_prop-%s.hdf5'%expID.strip('u-'))
+    outF = os.path.join(basedir,'Storm_prop-2006%sZ.hdf5'%expID.strip('u-'))
 
     with File(outF, 'a') as h5:
 
@@ -91,32 +91,36 @@ def get_storm_prop(expID, thread, **kwargs):
                 h5['/p'] = p
 
             try:
-                h5['/%s/%s/uids'%(res,expID.strip('u-'))][:]=uids
+                h5['/%s/2006%sZ/uids'%(res,expID.strip('u-'))][:]=uids
             except KeyError:
-                h5['/%s/%s/uids'%(res,expID.strip('u-'))]=uids
+                h5['/%s/2006%sZ/uids'%(res,expID.strip('u-'))]=uids
             for ii, uid in enumerate(uids):
                 df = tracks.xs(str(uid), level='uid')
+                precip = df['mean'].mean()
                 out = func(ncfiles[res], get_rainIndex(df, lon, lat, time, 'mean'),
                            **kwargs)
                 try:
-                    h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, funcn)][:]=out[0]
+                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn)][:]=out[0]
                 except KeyError:
-                    h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, funcn)]=out[0]
+                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn)]=out[0]
                 for tt, fn in enumerate(('lat', 'lon', 'time')):
                     try:
-                        h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)][:]=out[tt+1]
+                        h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)][:]=out[tt+1]
                     except KeyError:
-                        h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)]=out[tt+1]
+                        h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)]=out[tt+1]
 
-                    setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                    setattr(h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
                             'units', 'seconds since 1970-01-01 00:00:00')
                     try:
-                        setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                        setattr(h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
                                 'offset', int(kwargs['tdelta']))
                     except KeyError:
-                        setattr(h5['%s/%s/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
+                        setattr(h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
                                 'offset', 1)
-
+                    try:
+                        h5['%s/2006%sZ/%04i/rain'%(res,expID.strip('u-'), uid)] = precip
+                    except RuntimeError:
+                        pass
 
     return 0
 def um2nc(expID, thread, **kwargs):
