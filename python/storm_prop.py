@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+import sys
 
 import pandas as pd
 import numpy as np
 from netCDF4 import date2num
 import xarray as xr
 
+from model2lev import interp
 
 def calc_thetae(T, p, q):
     Lv = 2.40e3
@@ -22,7 +24,20 @@ def calc_thetav(T, p, q):
         theta = T * (p0/p)**kd
         return theta * (1 + 0.608*r)
 
+def calc_rho(q, T, p):
+    Rv = 461.495
+    Rd = 287.058
 
+    es = 6.112 * np.exp( (17.62 * (T - 273.15)) / (243.12 - (T - 273.15)))
+    s = 0.622 * es / p
+    #s[s==0] = 1e-6
+    rh = q / s
+    rh[rh<0] = 0
+    rh[rh>1] = 1
+    pv = rh * es
+    pd = p - pv
+    rho = pd/(Rd*T) + pv/(Rv*T)
+    return rho
 
 def omega(files, loc, **kwargs):
     '''Get omega of a location'''
@@ -45,7 +60,7 @@ def soilmoisture(files, loc, **kwargs):
     try:
         tdelta = int(kwargs['tdelta'])
     except KeyError:
-        tdelta = 1
+        tdelta = 4
 
     with xr.open_dataset(files['surf']) as f:
         tidx, loci, locj = loc #Index
@@ -70,6 +85,128 @@ def soilmoisture(files, loc, **kwargs):
     return sm, lats, lons, np.array([time[0]])
 
 
+def mflux(files, loc, **kwargs):
+    '''Calculate moisture flux'''
+    try:
+        tdelta = int(kwargs['tdelta'])
+    except KeyError:
+        tdelta = 1
+
+    f, g = xr.open_dataset(files['vert_cent']), xr.open_dataset(files['vert_wind'])
+    tidx, loci, locj = loc #Index
+
+    #Get the time windox from timedelta (tdelta in hours)
+    time = pd.DatetimeIndex(f['t'][:].values)
+    start = time[tidx] - timedelta(hours=tdelta)
+    end = time[tidx] + timedelta(hours=tdelta)
+    ttidx = np.where((time>= start)  & (time<= end))[0]
+    t1, t2 = ttidx[0], ttidx[-1]+1
+    mt = (t2 - t1) // 2
+
+
+    w = g['dz_dt'][t1:t2, :, loci[0]:loci[1], locj[0]:locj[-1]]
+    q = f['q'][t1:t2, :, loci[0]:loci[1], locj[0]:locj[1]]
+    mflux = (np.mean(q*w, axis=0) - np.mean(w, axis=0) * np.mean(q, axis=0)).values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    f.close()
+    g.close()
+    return mflux, lats, lons, np.array([time[0]])
+
+def cloud_p(files, loc, **kwargs):
+    f, g = xr.open_dataset(files['qcl_th']), xr.open_dataset(files['qcf_th'])
+    p = xr.open_dataset(files['res_th'])
+    Pf = xr.open_dataset(files['vert_cent'])
+    P = Pf.variables['p'].values
+    Pf.close()
+
+    tidx, loci, locj = loc #Index
+    qcl = f['QCL'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    qcf = g['QCF'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    pres = p['p'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    f.close(), g.close(), p.close()
+    return interp(qcl+qcf, pres/100, P), lats, lons, np.array([time[0]])
+
+def cloud_z(files, loc, **kwargs):
+    f, g = xr.open_dataset(files['qcl_th']), xr.open_dataset(files['qcf_th'])
+    z = xr.open_dataset(files['geop_th'])
+    Z = np.linspace(5, 9000, 22)
+
+    tidx, loci, locj = loc #Index
+    qcl = f['QCL'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    qcf = g['QCF'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    ht = z['ht'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    f.close(), g.close(), z.close()
+    return interp(qcl+qcf, ht, Z), lats, lons, np.array([time[0]])
+
+
+
+
+def momflux(files, loc, **kwargs):
+    '''Calculate momentumflux'''
+    try:
+        tdelta = int(kwargs['tdelta'])
+    except KeyError:
+        tdelta = 1
+
+    f, g = xr.open_dataset(files['vert_cent']), xr.open_dataset(files['vert_wind'])
+    tidx, loci, locj = loc #Index
+
+    # Get the time windox from timedelta (tdelta in hours)
+    time = pd.DatetimeIndex(f['t'][:].values)
+    start = time[tidx] - timedelta(hours=tdelta)
+    end = time[tidx] + timedelta(hours=tdelta)
+    ttidx = np.where((time>= start)  & (time<= end))[0]
+    t1, t2 = ttidx[0], ttidx[-1]+1
+    mt = (t2 - t1) // 2
+
+
+    w = g['dz_dt'][t1:t2, :, loci[0]:loci[1], locj[0]:locj[-1]]
+    v = g['v'][t1:t2, :, loci[0]:loci[1], locj[0]:locj[1]]
+    u = g['u'][t1:t2, :, loci[0]:loci[1], locj[0]:locj[1]]
+    uwp = (np.mean(u*w, axis=0) - np.mean(w, axis=0) * np.mean(u, axis=0)).values
+    vwp = (np.mean(v*w, axis=0) - np.mean(w, axis=0) * np.mean(v, axis=0)).values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    rho = calc_rho(f['q'][tidx,:, loci[0]:loci[1], locj[0]:locj[1]].values,
+                   f['temp'][tidx,:, loci[0]:loci[1], locj[0]:locj[1]].values,
+                   f['p'].values.reshape(1,-1,1,1))
+
+    f.close()
+    g.close()
+    return 9.81*rho*np.sqrt(uwp**2+vwp**2), lats, lons, np.array([time[0]])
 
 
 def bflux(files, loc, **kwargs):
