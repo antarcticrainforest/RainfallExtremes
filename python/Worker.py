@@ -14,13 +14,16 @@ import warnings
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 from h5py import File
+from netCDF4 import Dataset as nc
 import numpy as np
 import pandas as pd
+import wrf
 import xarray as xr
 warnings.filterwarnings('default', category=FutureWarning)
 
 
 from DataFrame import get_rainIndex
+import model2lev
 import storm_prop
 
 def test(expID, thread):
@@ -31,6 +34,81 @@ def test(expID, thread):
   print('%s is working on %s'%(thread, expID))
   time.sleep(4*random.random())
   return 0 #random.randint(0,1)
+
+def get_cloud_top(expID, thread, **kwargs):
+    '''
+    Calculate cloud top temp
+    '''
+    try:
+        basedir = os.path.expanduser(kwargs['basedir'])
+    except KeyError:
+        basedir = os.path.expanduser('~/Data/Extremes/UM/darwin/RA1T')
+
+    expDir = datetime.strptime(expID, 'u-%m%d%H%M').strftime('2006%m%dT%H%MZ')
+
+
+    lookup = {'UM044': '0p44km' , 'UM133': '1p33km'}
+    #Then get the netCDF files
+    ncfiles = {'UM044': {}, 'UM133': {}}
+    for res in ncfiles.keys():
+        for ncf in glob(os.path.join(basedir,'um-%s-%s-*.nc'%(lookup[res],
+                                                              expID.strip('u-')))):
+            txt = os.path.basename(ncf).strip('um-%s-%s-'%(lookup[res], expID)).split('_')
+            v = '_'.join([vv for vv in txt[:2] if not vv.startswith('2')])
+            ncfiles[res][v] = ncf
+    for res in ncfiles.keys():
+        f = xr.open_dataset(ncfiles[res]['qcl_th'])
+        ff = xr.open_dataset(ncfiles[res]['geop_th'])
+        g = xr.open_dataset(ncfiles[res]['res_th'])
+        gg = xr.open_dataset(ncfiles[res]['qcf_th'])
+        w = xr.open_dataset(ncfiles[res]['vert_cent'])
+        zf = xr.open_dataset(os.path.join(basedir,'orog.nc'))
+        
+        p = w['p'].values
+        pp = np.ones((w['temp'].shape[1], w['temp'].shape[-2], w['temp'].shape[-1]))
+        P = pp * p.reshape(-1,1,1)
+        T = w['temp']
+
+        orog = zf['ht'][0,0]
+        ctt = np.empty((w['temp'].shape[0], w['temp'].shape[-2], w['temp'].shape[-1]))
+        ht = ff['ht']
+        pres = g['p']
+        qlm = f['QCL']
+        qlf = gg['QCF']
+        q = w['q']
+        r = q/(1-q)
+        for i in range(len(ctt)):
+            geop = model2lev.interp(np.copy(ht[i].values, order='C'),
+                                    np.copy(pres[i].values/100., order='C'),
+                                    np.copy(p, order='C'))
+            ql = model2lev.interp(np.copy(qlm[i].values, order='C'),
+                                    np.copy(pres[i].values/100., order='C'),
+                                    np.copy(p, order='C'))
+            qi = model2lev.interp(np.copy(qlf[i].values, order='C'),
+                                  np.copy(pres[i].values/100, order='C'),
+                                  np.copy(p, order='C'))
+            ctt[i] = wrf.ctt(np.copy(P, order='C'),
+                             np.copy(T[i].values, order='C'),
+                             np.copy(r[i].values, order='C'),
+                             np.copy(ql, order='C'),
+                             np.copy(geop, order='C'),
+                             np.copy(orog.values, order='C'),
+                             qice=np.copy(qi, order='C'),
+                             meta=False, missing=-9999.99)
+        ff.close(), f.close(), g.close(), gg.close(), w.close(), zf.close()
+        with nc(ncfiles[res]['surf'], 'a') as f:
+            try:
+                f.createVariable('ctt','f',('t','lat','lon'), fill_value=-9999.99)
+            except:
+                pass
+            f.variables['ctt'][:] = ctt
+            f.variables['ctt'].long_name='Cloud Top Temperature'
+            f.variables['ctt'].short_name='ctt'
+            f.variables['ctt'].units='degC'
+            #f.variables['ctt'].missing_value=-9999.99
+    return 0
+
+
 
 def get_storm_prop(expID, thread, **kwargs):
     '''
