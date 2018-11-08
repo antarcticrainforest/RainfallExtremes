@@ -30,9 +30,12 @@ def cold_pool_grids(group, rain, slices, lon, lat,
         q = group.variables[qn]
         p = group.variables[presn]
         rr = rain.variables[rrn]
-        thetae = calc_thetap(T[s,0], p[s,0], q[s,0], rr[s,0])
+        if len(p.shape) == 1:
+            thetae = calc_thetap(T[s,0], p[0], q[s,0], rr[s,0])
+        else:
+            thetae = calc_thetap(T[s,0], p[s,0], q[s,0], rr[s,0])
         ary = 9.81 * (thetae - np.nanmean(thetae*mask))/(T[s][0].mean()*mask)
-        out['data'] = (np.ma.masked_less(-ary,0.03)*0 + 1) * (thetae.mean() - thetae)
+        out['data'] = (np.ma.masked_less(-ary,0.0)*0 + 1) * (thetae.mean() - thetae)
         yield out
 
 def creat_tracks(dataF,
