@@ -150,6 +150,7 @@ def mflux(files, loc, **kwargs):
     g.close()
     return mflux, lats, lons, np.array([time[0]])
 
+
 def mfluxdiv(files, loc, **kwargs):
     '''Calculate moisture flux divergence'''
     try:
@@ -276,6 +277,45 @@ def cloud_z(files, loc, **kwargs):
     return interp(qcl+qcf, ht, Z), lats, lons, np.array([time[0]])
 
 
+def entrainment(files, loc, **kwargs):
+    '''Calculate entrainment rate'''
+    from model2lev import interp
+    
+    cpd = 1005.7
+    Lv = 2.51e6
+    Lf = 2.83e6
+    f, g = xr.open_dataset(files['qcl_th']), xr.open_dataset(files['qcf_th'])
+    z = xr.open_dataset(files['geop_th'])
+    pf = xr.open_dataset(files['res_th'])
+    v = xr.open_dataset(files['vert_cent'])
+    P = v['p'][:].values * 100
+    tidx, loci, locj = loc #Index
+    #qcf = g['QCF'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    ht = z['ht'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    p = pf['p'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    Z = interp(ht, p, P[:])
+    #QF = interp(qcf, p, P[:])
+    T = v['temp'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    q = v['q'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    H = cpd*T[:] + 9.81*Z + Lv*q[:] #- Lf*QF
+    dh = np.diff(H, axis=0)
+    dz = np.diff(Z, axis=0)
+    dhdz = dh[:,loci[0]:loci[1], locj[0]:locj[1]]/dz[:,loci[0]:loci[1], locj[0]:locj[1]]
+    Hp = H[:,loci[0]:loci[1],locj[0]:locj[1]]# - H.mean(axis=(-2, -1)).reshape(-1, 1, 1)
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    f.close(), g.close(), z.close(), v.close(), pf.close()
+    e = dhdz/(Hp[1:]+0.01)
+    out = np.full((e.shape[0]+1,e.shape[1], e.shape[2]), 0)
+    out[:-1] = e
+    return out, lats, lons, np.array(time[0])
 
 
 def momflux(files, loc, **kwargs):
