@@ -192,8 +192,91 @@ def moist_int(files, loc, **kwargs):
     return div, lats, lons, np.array([time[0]])
 
 
+def pbl_t(files, loc, **kwargs):
+    '''Get boundary layer properties'''
+    f = xr.open_dataset(files['rain'])
+    g = xr.open_dataset(files['vera'])
+    tidx, loci, locj = loc #Index
+    time_1 = pd.DatetimeIndex(f['t'][:].values)
+    time_2 = pd.DatetimeIndex(g['t'][:].values)
+    tid = np.fabs((time_2 - time_1[tidx]).total_seconds()).argmin()
+    f.close()
+    return tid , g
+
+def ustar(files, loc, **kwargs):
+    '''Get the fricional velocity'''
+    _, loci, locj = loc #Index
+    tidx, f = pbl_t(files, loc, **kwargs)
+    ustar = f['field1696'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+
+    f.close()
+    return ustar, lats, lons, np.array([time[0]])
+
+def bowen(files, loc, **kwargs):
+    '''Get the latent heatflux'''
+    _, loci, locj = loc #Index
+    tidx, f = pbl_t(files, loc, **kwargs)
+    lh = f['lh'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    sh = f['sh'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+
+    f.close()
+    return sh/(lh+0.001), lats, lons, np.array([time[0]])
+
+def pbl_type(files, loc, **kwargs):
+    '''Get the latent heatflux'''
+    _, loci, locj = loc #Index
+    tidx, f = pbl_t(files, loc, **kwargs)
+    diag_type = f['field1036'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+
+    f.close()
+    return diag_type, lats, lons, np.array([time[0]])
 
 
+
+def pbl_h(files, loc, **kwargs):
+    '''Get the boundary layer height'''
+    _, loci, locj = loc #Index
+    tidx, f = pbl_t(files, loc, **kwargs)
+    ht = f['field1534'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+
+    f.close()
+    return ht, lats, lons, np.array([time[0]])
 
 def mfluxdiv(files, loc, **kwargs):
     '''Calculate moisture flux divergence'''
