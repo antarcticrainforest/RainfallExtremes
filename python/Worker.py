@@ -119,6 +119,14 @@ def get_storm_prop(expID, thread, **kwargs):
         funcn = kwargs['func']
     except KeyError:
         funcn = 'bflux'
+    try:
+        get_method = kwargs['get_method']
+    except KeyError:
+        get_method = 'mean'
+    try:
+        add = kwargs['add']
+    except KeyError:
+        add = ''
 
     func = getattr(storm_prop, funcn)
     #Get the treck data first
@@ -175,13 +183,13 @@ def get_storm_prop(expID, thread, **kwargs):
             for ii, uid in enumerate(uids):
                 df = tracks.xs(str(uid), level='uid')
                 precip = df['mean'].mean()
-                out = func(ncfiles[res], get_rainIndex(df, lon, lat, time, 'mean'),
+                out = func(ncfiles[res], get_rainIndex(df, lon, lat, time, get_method),
                            **kwargs)
                 try:
-                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn)][:]=out[0]
+                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn+add)][:]=out[0]
                 except KeyError:
-                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn)]=out[0]
-                for tt, fn in enumerate(('lat', 'lon', 'time')):
+                    h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, funcn+add)]=out[0]
+                '''for tt, fn in enumerate(('lat', 'lon', 'time')):
                     try:
                         h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)][:]=out[tt+1]
                     except KeyError:
@@ -194,11 +202,11 @@ def get_storm_prop(expID, thread, **kwargs):
                                 'offset', int(kwargs['tdelta']))
                     except KeyError:
                         setattr(h5['%s/2006%sZ/%04i/%s'%(res,expID.strip('u-'), uid, fn)],
-                                'offset', 1)
-                    try:
-                        h5['%s/2006%sZ/%04i/rain'%(res,expID.strip('u-'), uid)] = precip
-                    except RuntimeError:
-                        pass
+                                'offset', 1)'''
+                #try:
+                #    h5['%s/2006%sZ/%04i/rain'%(res,expID.strip('u-'), uid)] = precip
+                #except RuntimeError:
+                #    pass
 
     return 0
 def um2nc(expID, thread, **kwargs):

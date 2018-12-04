@@ -206,6 +206,7 @@ def get_rainIndex(df, lon, lat, time, method='center'):
                 options (center: central point of the track
                          mean :  point with highest mean rain-rate
                          max  :  point with highest max rain-rate)
+                         min  :  begining of the strom)
 
     Returns:
         index : array of inidces that represent the central storm of the track
@@ -219,7 +220,8 @@ def get_rainIndex(df, lon, lat, time, method='center'):
 
     elif method.lower() == 'mean' or method.lower() == 'max':
         idx = df[method.lower()].idxmax()
-
+    elif method.lower() == 'min':
+        idx = df.index[0]
     else:
         log.warning('Method not implemented falling back to center')
         idx = df.index[len(df) // 2]

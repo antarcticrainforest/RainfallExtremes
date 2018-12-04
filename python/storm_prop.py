@@ -64,9 +64,28 @@ def q(files, loc, **kwargs):
             lats = g['latitude'][loci[0]:loci[1]].values
         time = date2num(pd.DatetimeIndex(g['t'][tidx:tidx+1].values).to_pydatetime(),
                         'seconds since 1970-01-01 00:00:00')
-        q = g['q'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values -\
-                g['q'][tidx].mean(axis=(-2,-1)).values.reshape(-1,1,1)
+        q = g['q'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values #-\
+                #g['q'][tidx].mean(axis=(-2,-1)).values.reshape(-1,1,1)
     return q, lats, lons, np.array([time[0]])
+
+def temp(files, loc, **kwargs):
+    '''Get temperature of a location'''
+    tidx, loci, locj = loc #Index
+    with xr.open_dataset(files['vert_cent']) as g:
+        try:
+            lons = g['lon'][locj[0]:locj[1]].values
+            lats = g['lat'][loci[0]:loci[1]].values
+        except KeyError:
+            lons = g['longitude'][locj[0]:locj[1]].values
+            lats = g['latitude'][loci[0]:loci[1]].values
+        time = date2num(pd.DatetimeIndex(g['t'][tidx:tidx+1].values).to_pydatetime(),
+                        'seconds since 1970-01-01 00:00:00')
+        t = g['temp'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values - 0#\
+                #g['temp'][tidx].mean(axis=(-2,-1)).values.reshape(-1,1,1)
+    return t, lats, lons, np.array([time[0]])
+
+
+
 
 
 
@@ -357,7 +376,7 @@ def ctt(files, loc, **kwargs):
 
     return -(dqvp + dqup)
 
-def cloud_p(files, loc, **kwargs):
+def cloud_pf(files, loc, **kwargs):
     from model2lev import interp
     f, g = xr.open_dataset(files['qcl_th']), xr.open_dataset(files['qcf_th'])
     p = xr.open_dataset(files['res_th'])
@@ -366,9 +385,8 @@ def cloud_p(files, loc, **kwargs):
     Pf.close()
 
     tidx, loci, locj = loc #Index
-    qcl = f['QCL'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
-    qcf = g['QCF'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
-    pres = p['p'][tidx, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    qcf = g['QCF'][tidx-2:tidx].mean(axis=0)
+    pres = p['p'][tidx-2:tidx].mean(axis=0)
     try:
         lons = f['lon'][locj[0]:locj[1]].values
         lats = f['lat'][loci[0]:loci[1]].values
@@ -378,8 +396,50 @@ def cloud_p(files, loc, **kwargs):
 
     time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
                     'seconds since 1970-01-01 00:00:00')
+    try:
+        data = np.ma.masked_invalid(qcf.values).filled(0)
+    except AttributeError:
+        data = qcf.values
+    cloud = interp(data, pres.values/100, P)
+    cloudp = cloud[...,loci[0]:loci[1], locj[0]:locj[-1]] - cloud.mean(axis=(-2,-1)).reshape(-1,1,1)
+
     f.close(), g.close(), p.close()
-    return interp(qcl+qcf, pres/100, P), lats, lons, np.array([time[0]])
+    return 1000 * cloudp, lats, lons, np.array([time[0]])
+
+def cloud_pl(files, loc, **kwargs):
+    from model2lev import interp
+    f, g = xr.open_dataset(files['qcl_th']), xr.open_dataset(files['qcf_th'])
+    p = xr.open_dataset(files['res_th'])
+    Pf = xr.open_dataset(files['vert_cent'])
+    P = Pf.variables['p'].values
+    Pf.close()
+
+    tidx, loci, locj = loc #Index
+    qcl = f['QCL'][tidx-2:tidx].mean(axis=0)
+    pres = p['p'][tidx-2:tidx].mean(axis=0)
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    
+    try:
+        data = np.ma.masked_invalid(qcl.values).filled(0)
+    except AttributeError:
+        data = qcl.values
+    
+    cloud = interp(data, pres.values/100, P)
+    cloudp = cloud[...,loci[0]:loci[1], locj[0]:locj[-1]] - cloud.mean(axis=(-2,-1)).reshape(-1,1,1)
+
+    f.close(), g.close(), p.close()
+    return 1000 * cloudp, lats, lons, np.array([time[0]])
+
+
+
 
 def cloud_z(files, loc, **kwargs):
     from model2lev import interp
@@ -535,13 +595,31 @@ def mse(files, loc, **kwargs):
     v = xr.open_dataset(files['vert_cent'])
     P = v['p'][:].values * 100
     tidx, loci, locj = loc #Index
-    qcf = g['QCF'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
-    p = pf['p'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
-    QF = interp(qcf, p, P[:])
-    T = v['temp'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
-    q = v['q'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[-1]].values
+    tidx -= 1
+    try:
+        qci = np.ma.masked_invalid(g['QCF'][tidx].values).filled(0)
+    except:
+        qci = g['QCF'][tidx].values
+    try:
+        qcl = np.ma.masked_invalid(f['QCL'][tidx].values).filled(0)
+    except:
+        qcl = f['QCL'][tidx].values
+
+
+    p = pf['p'][tidx].values
+    QI = interp(qci, p, P[:])
+    QL = interp(qcl, p, P[:])
+    QI[QI < 0] = 0
+    QL[QL < 0] = 0
+    T = v['temp'][tidx].values
+    q = v['q'][tidx].values
     Z = calc_z(z['p'][tidx].values, P.reshape(-1,1,1), T)
-    H = cpd*T + 9.81*Z + Lv*q - Lf*QF
+    Tv = T*(1+0.61*q-QL)
+
+    sli = cpd*Tv + 9.81*Z - Lv*(QL) #- Lf*QI
+    qt = (q+QL)
+    sv = sli - 0.61*cpd*T[0]*qt
+    sv = sv[:,loci[0]:loci[1],locj[0]:locj[1]] - sv.mean(axis=(-2,-1)).reshape(-1, 1, 1)
     try:
         lons = f['lon'][locj[0]:locj[1]].values
         lats = f['lat'][loci[0]:loci[1]].values
@@ -552,7 +630,7 @@ def mse(files, loc, **kwargs):
     time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
                     'seconds since 1970-01-01 00:00:00')
     f.close(), g.close(), z.close(), v.close(), pf.close()
-    return H[:,loci[0]:loci[1], locj[0]:locj[1]], lats, lons, np.array(time[0])
+    return sv/cpd, lats, lons, np.array(time[0])
 
 
 def momflux(files, loc, **kwargs):
