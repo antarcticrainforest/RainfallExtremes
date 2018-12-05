@@ -11848,7 +11848,7 @@ div.output_prompt {
 
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">HTML</span><span class="p">(</span><span class="n">showcode</span><span class="p">)</span>
@@ -11864,7 +11864,7 @@ div.output_prompt {
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[4]:</div>
+<div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -11918,73 +11918,206 @@ div.output_prompt {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<figure>
-<img src="Topo.png" alt="Study area" style="height:500px;width:600px;"/>
-<figcaption  style="text-align: right">Study Area</figcaption>
-</figure>
-</div>
-</div>
-</div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="How-Important-is-the-Diurnal-Rainfall-Cycle?">How Important is the Diurnal Rainfall Cycle?<a class="anchor-link" href="#How-Important-is-the-Diurnal-Rainfall-Cycle?">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<figure>
-<img src="Fig_002-2.png" alt="Study area"/>
-<figcaption  style="text-align: center"></figcaption>
-</figure>
-</div>
-</div>
-</div></section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Rainfall-and-Extreme-Events-over-the-Tiwi-Islands-by-Break-and-Bursts">Rainfall and Extreme Events over the Tiwi-Islands by Break and Bursts<a class="anchor-link" href="#Rainfall-and-Extreme-Events-over-the-Tiwi-Islands-by-Break-and-Bursts">&#182;</a></h3>
-</div>
-</div>
-</div><div class="fragment">
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<figure>
-<img src="Fig_003-2.png" alt="Study area" style='height:500px;'/>
-<figcaption  style="text-align: right;">Occurrence of Extreme Events</figcaption>
-</figure>
-</div>
-</div>
-</div></div><div class="fragment">
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>More destinct Extreme Events during Break-Periods</li>
-</ul>
-
-</div>
-</div>
-</div></div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Simulation-of-Hector-Events-(12/11---20/11/2006)">Simulation of Hector Events (12/11 - 20/11/2006)<a class="anchor-link" href="#Simulation-of-Hector-Events-(12/11---20/11/2006)">&#182;</a></h2>
 </div>
 </div>
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[240]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">folium</span>
+<span class="n">borders</span> <span class="o">=</span> <span class="p">(([</span><span class="o">-</span><span class="mf">17.091</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.443</span><span class="p">]</span> <span class="p">,</span> <span class="p">[</span><span class="mf">122.963</span><span class="p">,</span> <span class="mf">139.055</span><span class="p">]),</span>
+           <span class="p">([</span><span class="o">-</span><span class="mf">14.505</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.005</span><span class="p">],</span> <span class="p">[</span><span class="mf">127.385</span><span class="p">,</span> <span class="mf">134.693</span><span class="p">]),</span> 
+           <span class="p">([</span><span class="o">-</span><span class="mf">13.757</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.757</span><span class="p">],</span> <span class="p">[</span><span class="mf">129.557</span><span class="p">,</span> <span class="mf">132.529</span><span class="p">]))</span>
+<span class="n">coordinates</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">borders</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span><span class="p">[</span><span class="n">lons</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lons</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lons</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">lons</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">lats</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lats</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lats</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lats</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">coordinates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+<span class="n">geoJsonData</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LineString&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;stroke&quot;</span><span class="p">:</span> <span class="s2">&quot;#fc1717&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-opacity&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-width&quot;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LineString&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;stroke&quot;</span><span class="p">:</span> <span class="s2">&quot;#1f1a95&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-opacity&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-width&quot;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span>
+        <span class="p">},</span>
+         <span class="p">{</span>
+            <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LineString&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;stroke&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-opacity&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;stroke-width&quot;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span>
+        <span class="p">}</span>
+        
+    <span class="p">],</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span>
+<span class="p">}</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">folium</span><span class="o">.</span><span class="n">Marker</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">popup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="s1">&#39;CPOL&#39;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="c1">#folium.GeoJson(geoJsonData,</span>
+<span class="c1">#    style_function=lambda x: {</span>
+<span class="c1">#        &#39;color&#39; : x[&#39;properties&#39;][&#39;stroke&#39;],</span>
+<span class="c1">#        &#39;weight&#39; : x[&#39;properties&#39;][&#39;stroke-width&#39;],</span>
+<span class="c1">#        &#39;opacity&#39;: 0.6,</span>
+<span class="c1">#        }).add_to(m)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><iframe src="data:text/html;charset=utf-8;base64,PCFET0NUWVBFIGh0bWw+CjxoZWFkPiAgICAKICAgIDxtZXRhIGh0dHAtZXF1aXY9ImNvbnRlbnQtdHlwZSIgY29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PVVURi04IiAvPgogICAgPHNjcmlwdD5MX1BSRUZFUl9DQU5WQVM9ZmFsc2U7IExfTk9fVE9VQ0g9ZmFsc2U7IExfRElTQUJMRV8zRD1mYWxzZTs8L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xlYWZsZXRAMS4zLjQvZGlzdC9sZWFmbGV0LmpzIj48L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2FqYXguZ29vZ2xlYXBpcy5jb20vYWpheC9saWJzL2pxdWVyeS8xLjExLjEvanF1ZXJ5Lm1pbi5qcyI+PC9zY3JpcHQ+CiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9tYXhjZG4uYm9vdHN0cmFwY2RuLmNvbS9ib290c3RyYXAvMy4yLjAvanMvYm9vdHN0cmFwLm1pbi5qcyI+PC9zY3JpcHQ+CiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvTGVhZmxldC5hd2Vzb21lLW1hcmtlcnMvMi4wLjIvbGVhZmxldC5hd2Vzb21lLW1hcmtlcnMuanMiPjwvc2NyaXB0PgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xlYWZsZXRAMS4zLjQvZGlzdC9sZWFmbGV0LmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL21heGNkbi5ib290c3RyYXBjZG4uY29tL2Jvb3RzdHJhcC8zLjIuMC9jc3MvYm9vdHN0cmFwLm1pbi5jc3MiLz4KICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9tYXhjZG4uYm9vdHN0cmFwY2RuLmNvbS9ib290c3RyYXAvMy4yLjAvY3NzL2Jvb3RzdHJhcC10aGVtZS5taW4uY3NzIi8+CiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vbWF4Y2RuLmJvb3RzdHJhcGNkbi5jb20vZm9udC1hd2Vzb21lLzQuNi4zL2Nzcy9mb250LWF3ZXNvbWUubWluLmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2NkbmpzLmNsb3VkZmxhcmUuY29tL2FqYXgvbGlicy9MZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy8yLjAuMi9sZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy5jc3MiLz4KICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9yYXdjZG4uZ2l0aGFjay5jb20vcHl0aG9uLXZpc3VhbGl6YXRpb24vZm9saXVtL21hc3Rlci9mb2xpdW0vdGVtcGxhdGVzL2xlYWZsZXQuYXdlc29tZS5yb3RhdGUuY3NzIi8+CiAgICA8c3R5bGU+aHRtbCwgYm9keSB7d2lkdGg6IDEwMCU7aGVpZ2h0OiAxMDAlO21hcmdpbjogMDtwYWRkaW5nOiAwO308L3N0eWxlPgogICAgPHN0eWxlPiNtYXAge3Bvc2l0aW9uOmFic29sdXRlO3RvcDowO2JvdHRvbTowO3JpZ2h0OjA7bGVmdDowO308L3N0eWxlPgogICAgCiAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLAogICAgICAgIGluaXRpYWwtc2NhbGU9MS4wLCBtYXhpbXVtLXNjYWxlPTEuMCwgdXNlci1zY2FsYWJsZT1ubyIgLz4KICAgIDxzdHlsZT4jbWFwX2YzMTEzMWM0MmEwYjQ0ZDZiYzE0ZjY4YThlMDg4YjhmIHsKICAgICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgICAgd2lkdGg6IDEwMC4wJTsKICAgICAgICBoZWlnaHQ6IDEwMC4wJTsKICAgICAgICBsZWZ0OiAwLjAlOwogICAgICAgIHRvcDogMC4wJTsKICAgICAgICB9CiAgICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PiAgICAKICAgIAogICAgPGRpdiBjbGFzcz0iZm9saXVtLW1hcCIgaWQ9Im1hcF9mMzExMzFjNDJhMGI0NGQ2YmMxNGY2OGE4ZTA4OGI4ZiIgPjwvZGl2Pgo8L2JvZHk+CjxzY3JpcHQ+ICAgIAogICAgCiAgICAKICAgICAgICB2YXIgYm91bmRzID0gbnVsbDsKICAgIAoKICAgIHZhciBtYXBfZjMxMTMxYzQyYTBiNDRkNmJjMTRmNjhhOGUwODhiOGYgPSBMLm1hcCgKICAgICAgICAnbWFwX2YzMTEzMWM0MmEwYjQ0ZDZiYzE0ZjY4YThlMDg4YjhmJywgewogICAgICAgIGNlbnRlcjogWy0xMi4yNTAzMjMsIDEzMS4wNDMxMDFdLAogICAgICAgIHpvb206IDYsCiAgICAgICAgbWF4Qm91bmRzOiBib3VuZHMsCiAgICAgICAgbGF5ZXJzOiBbXSwKICAgICAgICB3b3JsZENvcHlKdW1wOiBmYWxzZSwKICAgICAgICBjcnM6IEwuQ1JTLkVQU0czODU3LAogICAgICAgIHpvb21Db250cm9sOiB0cnVlLAogICAgICAgIH0pOwoKICAgIAogICAgCiAgICB2YXIgdGlsZV9sYXllcl8wOWNjYWY1ZjkyM2E0MWRlOTNiZTA0MzNjNzM2ZjQ0YSA9IEwudGlsZUxheWVyKAogICAgICAgICdodHRwczovL3tzfS50aWxlLm9wZW5zdHJlZXRtYXAub3JnL3t6fS97eH0ve3l9LnBuZycsCiAgICAgICAgewogICAgICAgICJhdHRyaWJ1dGlvbiI6IG51bGwsCiAgICAgICAgImRldGVjdFJldGluYSI6IGZhbHNlLAogICAgICAgICJtYXhOYXRpdmVab29tIjogMTgsCiAgICAgICAgIm1heFpvb20iOiAxOCwKICAgICAgICAibWluWm9vbSI6IDAsCiAgICAgICAgIm5vV3JhcCI6IGZhbHNlLAogICAgICAgICJvcGFjaXR5IjogMSwKICAgICAgICAic3ViZG9tYWlucyI6ICJhYmMiLAogICAgICAgICJ0bXMiOiBmYWxzZQp9KS5hZGRUbyhtYXBfZjMxMTMxYzQyYTBiNDRkNmJjMTRmNjhhOGUwODhiOGYpOwogICAgCiAgICAgICAgdmFyIG1hcmtlcl8yZmU2YWZjMTNkMjU0NGU0ODY4ZGQ3YjFkOGExNDYzZiA9IEwubWFya2VyKAogICAgICAgICAgICBbLTEyLjI1MDMyMywgMTMxLjA0MzEwMV0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgIGljb246IG5ldyBMLkljb24uRGVmYXVsdCgpCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICkuYWRkVG8obWFwX2YzMTEzMWM0MmEwYjQ0ZDZiYzE0ZjY4YThlMDg4YjhmKTsKICAgICAgICAKICAgIAogICAgICAgIG1hcmtlcl8yZmU2YWZjMTNkMjU0NGU0ODY4ZGQ3YjFkOGExNDYzZi5iaW5kVG9vbHRpcCgKICAgICAgICAgICAgYDxkaXY+YAogICAgICAgICAgICArIGBDUE9MYCArIGA8L2Rpdj5gLAogICAgICAgICAgICB7InN0aWNreSI6IHRydWV9CiAgICAgICAgKTsKICAgICAgICAKPC9zY3JpcHQ+" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div></div></section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Model Setup</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">folium</span><span class="o">.</span><span class="n">Marker</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">popup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="s1">&#39;CPOL&#39;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">folium</span><span class="o">.</span><span class="n">GeoJson</span><span class="p">(</span><span class="n">geoJsonData</span><span class="p">,</span>
+    <span class="n">style_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;color&#39;</span> <span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;stroke&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;weight&#39;</span> <span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;stroke-width&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+        <span class="p">})</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><iframe src="data:text/html;charset=utf-8;base64,PCFET0NUWVBFIGh0bWw+CjxoZWFkPiAgICAKICAgIDxtZXRhIGh0dHAtZXF1aXY9ImNvbnRlbnQtdHlwZSIgY29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PVVURi04IiAvPgogICAgPHNjcmlwdD5MX1BSRUZFUl9DQU5WQVM9ZmFsc2U7IExfTk9fVE9VQ0g9ZmFsc2U7IExfRElTQUJMRV8zRD1mYWxzZTs8L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xlYWZsZXRAMS4zLjQvZGlzdC9sZWFmbGV0LmpzIj48L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2FqYXguZ29vZ2xlYXBpcy5jb20vYWpheC9saWJzL2pxdWVyeS8xLjExLjEvanF1ZXJ5Lm1pbi5qcyI+PC9zY3JpcHQ+CiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9tYXhjZG4uYm9vdHN0cmFwY2RuLmNvbS9ib290c3RyYXAvMy4yLjAvanMvYm9vdHN0cmFwLm1pbi5qcyI+PC9zY3JpcHQ+CiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvTGVhZmxldC5hd2Vzb21lLW1hcmtlcnMvMi4wLjIvbGVhZmxldC5hd2Vzb21lLW1hcmtlcnMuanMiPjwvc2NyaXB0PgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xlYWZsZXRAMS4zLjQvZGlzdC9sZWFmbGV0LmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL21heGNkbi5ib290c3RyYXBjZG4uY29tL2Jvb3RzdHJhcC8zLjIuMC9jc3MvYm9vdHN0cmFwLm1pbi5jc3MiLz4KICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9tYXhjZG4uYm9vdHN0cmFwY2RuLmNvbS9ib290c3RyYXAvMy4yLjAvY3NzL2Jvb3RzdHJhcC10aGVtZS5taW4uY3NzIi8+CiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vbWF4Y2RuLmJvb3RzdHJhcGNkbi5jb20vZm9udC1hd2Vzb21lLzQuNi4zL2Nzcy9mb250LWF3ZXNvbWUubWluLmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2NkbmpzLmNsb3VkZmxhcmUuY29tL2FqYXgvbGlicy9MZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy8yLjAuMi9sZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy5jc3MiLz4KICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9yYXdjZG4uZ2l0aGFjay5jb20vcHl0aG9uLXZpc3VhbGl6YXRpb24vZm9saXVtL21hc3Rlci9mb2xpdW0vdGVtcGxhdGVzL2xlYWZsZXQuYXdlc29tZS5yb3RhdGUuY3NzIi8+CiAgICA8c3R5bGU+aHRtbCwgYm9keSB7d2lkdGg6IDEwMCU7aGVpZ2h0OiAxMDAlO21hcmdpbjogMDtwYWRkaW5nOiAwO308L3N0eWxlPgogICAgPHN0eWxlPiNtYXAge3Bvc2l0aW9uOmFic29sdXRlO3RvcDowO2JvdHRvbTowO3JpZ2h0OjA7bGVmdDowO308L3N0eWxlPgogICAgCiAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLAogICAgICAgIGluaXRpYWwtc2NhbGU9MS4wLCBtYXhpbXVtLXNjYWxlPTEuMCwgdXNlci1zY2FsYWJsZT1ubyIgLz4KICAgIDxzdHlsZT4jbWFwXzIyYjZhOTQ2ZmQwNDQwNTZhYmQ2ZWYxYzdjNGY5YmNhIHsKICAgICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgICAgd2lkdGg6IDEwMC4wJTsKICAgICAgICBoZWlnaHQ6IDEwMC4wJTsKICAgICAgICBsZWZ0OiAwLjAlOwogICAgICAgIHRvcDogMC4wJTsKICAgICAgICB9CiAgICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PiAgICAKICAgIAogICAgPGRpdiBjbGFzcz0iZm9saXVtLW1hcCIgaWQ9Im1hcF8yMmI2YTk0NmZkMDQ0MDU2YWJkNmVmMWM3YzRmOWJjYSIgPjwvZGl2Pgo8L2JvZHk+CjxzY3JpcHQ+ICAgIAogICAgCiAgICAKICAgICAgICB2YXIgYm91bmRzID0gbnVsbDsKICAgIAoKICAgIHZhciBtYXBfMjJiNmE5NDZmZDA0NDA1NmFiZDZlZjFjN2M0ZjliY2EgPSBMLm1hcCgKICAgICAgICAnbWFwXzIyYjZhOTQ2ZmQwNDQwNTZhYmQ2ZWYxYzdjNGY5YmNhJywgewogICAgICAgIGNlbnRlcjogWy0xMi4yNTAzMjMsIDEzMS4wNDMxMDFdLAogICAgICAgIHpvb206IDYsCiAgICAgICAgbWF4Qm91bmRzOiBib3VuZHMsCiAgICAgICAgbGF5ZXJzOiBbXSwKICAgICAgICB3b3JsZENvcHlKdW1wOiBmYWxzZSwKICAgICAgICBjcnM6IEwuQ1JTLkVQU0czODU3LAogICAgICAgIHpvb21Db250cm9sOiB0cnVlLAogICAgICAgIH0pOwoKICAgIAogICAgCiAgICB2YXIgdGlsZV9sYXllcl85MjRhODFjMWNmYTc0MDRhYjViNDFlYTExOGM3NGRmOSA9IEwudGlsZUxheWVyKAogICAgICAgICdodHRwczovL3tzfS50aWxlLm9wZW5zdHJlZXRtYXAub3JnL3t6fS97eH0ve3l9LnBuZycsCiAgICAgICAgewogICAgICAgICJhdHRyaWJ1dGlvbiI6IG51bGwsCiAgICAgICAgImRldGVjdFJldGluYSI6IGZhbHNlLAogICAgICAgICJtYXhOYXRpdmVab29tIjogMTgsCiAgICAgICAgIm1heFpvb20iOiAxOCwKICAgICAgICAibWluWm9vbSI6IDAsCiAgICAgICAgIm5vV3JhcCI6IGZhbHNlLAogICAgICAgICJvcGFjaXR5IjogMSwKICAgICAgICAic3ViZG9tYWlucyI6ICJhYmMiLAogICAgICAgICJ0bXMiOiBmYWxzZQp9KS5hZGRUbyhtYXBfMjJiNmE5NDZmZDA0NDA1NmFiZDZlZjFjN2M0ZjliY2EpOwogICAgCiAgICAgICAgdmFyIG1hcmtlcl9jZjExZjJhMDE5ZjA0YTc0YWFmNzE5NzgxNDg1MGE1OCA9IEwubWFya2VyKAogICAgICAgICAgICBbLTEyLjI1MDMyMywgMTMxLjA0MzEwMV0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgIGljb246IG5ldyBMLkljb24uRGVmYXVsdCgpCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICkuYWRkVG8obWFwXzIyYjZhOTQ2ZmQwNDQwNTZhYmQ2ZWYxYzdjNGY5YmNhKTsKICAgICAgICAKICAgIAogICAgICAgIG1hcmtlcl9jZjExZjJhMDE5ZjA0YTc0YWFmNzE5NzgxNDg1MGE1OC5iaW5kVG9vbHRpcCgKICAgICAgICAgICAgYDxkaXY+YAogICAgICAgICAgICArIGBDUE9MYCArIGA8L2Rpdj5gLAogICAgICAgICAgICB7InN0aWNreSI6IHRydWV9CiAgICAgICAgKTsKICAgICAgICAKICAgIAogICAgICAgIAogICAgICAgIHZhciBnZW9fanNvbl85NTEyYjBlZTQ2Y2E0ZmY3ODdmNTNjZmRmYjU0MzQ0MyA9IEwuZ2VvSnNvbigKICAgICAgICAgICAgeyJmZWF0dXJlcyI6IFt7Imdlb21ldHJ5IjogeyJjb29yZGluYXRlcyI6IFtbMTIyLjk2MywgLTE3LjA5MV0sIFsxMjIuOTYzLCAtNy40NDNdLCBbMTM5LjA1NSwgLTcuNDQzXSwgWzEzOS4wNTUsIC0xNy4wOTFdLCBbMTIyLjk2MywgLTE3LjA5MV1dLCAidHlwZSI6ICJMaW5lU3RyaW5nIn0sICJwcm9wZXJ0aWVzIjogeyJoaWdobGlnaHQiOiB7fSwgInN0cm9rZSI6ICIjZmMxNzE3IiwgInN0cm9rZS1vcGFjaXR5IjogMSwgInN0cm9rZS13aWR0aCI6IDIsICJzdHlsZSI6IHsiY29sb3IiOiAiI2ZjMTcxNyIsICJvcGFjaXR5IjogMC42LCAid2VpZ2h0IjogMn19LCAidHlwZSI6ICJGZWF0dXJlIn0sIHsiZ2VvbWV0cnkiOiB7ImNvb3JkaW5hdGVzIjogW1sxMjcuMzg1LCAtMTQuNTA1XSwgWzEyNy4zODUsIC0xMC4wMDVdLCBbMTM0LjY5MywgLTEwLjAwNV0sIFsxMzQuNjkzLCAtMTQuNTA1XSwgWzEyNy4zODUsIC0xNC41MDVdXSwgInR5cGUiOiAiTGluZVN0cmluZyJ9LCAicHJvcGVydGllcyI6IHsiaGlnaGxpZ2h0Ijoge30sICJzdHJva2UiOiAiIzFmMWE5NSIsICJzdHJva2Utb3BhY2l0eSI6IDEsICJzdHJva2Utd2lkdGgiOiAyLCAic3R5bGUiOiB7ImNvbG9yIjogIiMxZjFhOTUiLCAib3BhY2l0eSI6IDAuNiwgIndlaWdodCI6IDJ9fSwgInR5cGUiOiAiRmVhdHVyZSJ9LCB7Imdlb21ldHJ5IjogeyJjb29yZGluYXRlcyI6IFtbMTI5LjU1NywgLTEzLjc1N10sIFsxMjkuNTU3LCAtMTAuNzU3XSwgWzEzMi41MjksIC0xMC43NTddLCBbMTMyLjUyOSwgLTEzLjc1N10sIFsxMjkuNTU3LCAtMTMuNzU3XV0sICJ0eXBlIjogIkxpbmVTdHJpbmcifSwgInByb3BlcnRpZXMiOiB7ImhpZ2hsaWdodCI6IHt9LCAic3Ryb2tlIjogIm9yYW5nZSIsICJzdHJva2Utb3BhY2l0eSI6IDEsICJzdHJva2Utd2lkdGgiOiAyLCAic3R5bGUiOiB7ImNvbG9yIjogIm9yYW5nZSIsICJvcGFjaXR5IjogMC42LCAid2VpZ2h0IjogMn19LCAidHlwZSI6ICJGZWF0dXJlIn1dLCAidHlwZSI6ICJGZWF0dXJlQ29sbGVjdGlvbiJ9CiAgICAgICAgICAgIAogICAgICAgICAgICApLmFkZFRvKG1hcF8yMmI2YTk0NmZkMDQ0MDU2YWJkNmVmMWM3YzRmOWJjYSk7CiAgICAgICAgZ2VvX2pzb25fOTUxMmIwZWU0NmNhNGZmNzg3ZjUzY2ZkZmI1NDM0NDMuc2V0U3R5bGUoZnVuY3Rpb24oZmVhdHVyZSkge3JldHVybiBmZWF0dXJlLnByb3BlcnRpZXMuc3R5bGU7fSk7CiAgICAgICAgCjwvc2NyaXB0Pg==" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">HTML</span>
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;font color=&quot;#fc1717&quot;&gt;4 km&lt;/font&gt; &amp;rarr; &lt;font color=&#39;#1f1a95&#39;&gt;1.33 km&lt;/font&gt;&amp;rarr; &lt;font color=&#39;orange&#39;&gt; 0.44 km&lt;/font&gt;
+&lt;/li&gt;
+&lt;li&gt;80 Vertical Level&lt;/li&gt;
+&lt;li&gt;8 Ensemble Member, each 6 hours different init time&lt;/li&gt;
+&lt;/p&gt;
+&lt;/ul&gt;
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<ul>
+<li>
+<p><font color="#fc1717">4 km</font> &rarr; <font color='#1f1a95'>1.33 km</font>&rarr; <font color='orange'> 0.44 km</font>
+</li>
+<li>80 Vertical Level</li>
+<li>8 Ensemble Member, each 6 hours different init time</li>
+</p>
+</ul>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div></section></section><section><section>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">p3plot</span><span class="p">)</span>
@@ -12055,15 +12188,15 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 </div>
 
-</div></div></section><section>
+</div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[241]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">HTML</span>
 &lt;figure&gt;
-&lt;video width=&quot;850&quot; height=&quot;450&quot; loop=&quot;true&quot; controls&gt;
+&lt;video width=&quot;750&quot; height=&quot;400&quot; loop=&quot;true&quot; controls&gt;
   &lt;source src=&#39;WeekOfHector-Ens-3.mp4&#39; type=&quot;video/mp4&quot;&gt;
 &lt;/video&gt;
  &lt;figcaption  style=&quot;text-align: right&quot;&gt;Example UM 0.44km Simulation and CPOL&lt;/figcaption&gt;
@@ -12086,7 +12219,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 
 <div class="output_html rendered_html output_subarea ">
 <figure>
-<video width="850" height="450" loop="true" controls>
+<video width="750" height="400" loop="true" controls>
   <source src='WeekOfHector-Ens-3.mp4' type="video/mp4">
 </video>
  <figcaption  style="text-align: right">Example UM 0.44km Simulation and CPOL</figcaption>
@@ -12104,7 +12237,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <figure>
-<img src="Fig_010.png" alt="Study area" style='500px;'/>
+<img src="Fig_010.png" alt="Study area" style='height:450px;'/>
 <figcaption  style="text-align: right">Maps of Rainfall</figcaption>
 </figure>
 </div>
@@ -12123,7 +12256,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <figure>
-<img src="Fig_012.png" alt="Study area" style='500px;'/>
+<img src="Fig_012.png" alt="Study area" style='height:450px;'/>
 <figcaption  style="text-align: right">Time of Rainfall Maximum and Area Avg Diurnal Cycle</figcaption>
 </figure>
 </div>
@@ -12131,12 +12264,12 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div></div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[244]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">HTML</span>
 &lt;figure&gt;
-&lt;video width=&quot;800&quot; height=&quot;450&quot; loop=&quot;true&quot; controls&gt;
+&lt;video width=&quot;750&quot; height=&quot;400&quot; loop=&quot;true&quot; controls&gt;
   &lt;source src=&#39;WeekOfHector-Diurnal-2.mp4&#39; type=&quot;video/mp4&quot;&gt;
 &lt;/video&gt;
  &lt;figcaption  style=&quot;text-align: right&quot;&gt;Diurnal Cycle&lt;/figcaption&gt;
@@ -12159,7 +12292,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 
 <div class="output_html rendered_html output_subarea ">
 <figure>
-<video width="800" height="450" loop="true" controls>
+<video width="750" height="400" loop="true" controls>
   <source src='WeekOfHector-Diurnal-2.mp4' type="video/mp4">
 </video>
  <figcaption  style="text-align: right">Diurnal Cycle</figcaption>
@@ -12176,19 +12309,6 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="In-Summary:">In Summary:<a class="anchor-link" href="#In-Summary:">&#182;</a></h3><ul>
-<li>Storms are a little too early in the model</li>
-<li>Occure too central over Melville Island</li>
-<li>Slight improvement with higher res version</li>
-</ul>
-
-</div>
-</div>
-</div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="How-well-are-Extremes-Represented?">How well are Extremes Represented?<a class="anchor-link" href="#How-well-are-Extremes-Represented?">&#182;</a></h2>
 </div>
 </div>
@@ -12198,7 +12318,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <figure>
-<img src="Fig_013.png" alt="Study area" style='height: 500px;'/>
+<img src="Fig_013.png" alt="Study area" style='height: 450px;'/>
 <figcaption  style="text-align: right">Occurrence of Extreme Events</figcaption>
 </figure>
 </div>
@@ -12208,9 +12328,23 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="In-Summary:">In Summary:<a class="anchor-link" href="#In-Summary:">&#182;</a></h3><ul>
+<li>Storms are a Little too early in the Model</li>
+<li>Occure too Central over Melville Island</li>
+<li>Extreme Events are Slighly Over Estimated</li>
+<li>Slight Improvement with Higher Resolution Version</li>
+</ul>
+
+</div>
+</div>
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Storm-Track-Analysis">Storm-Track Analysis<a class="anchor-link" href="#Storm-Track-Analysis">&#182;</a></h2><ul>
-<li>Analyse Strom track using an adopted tracking verion of TINT</li>
-<li>Tracking with Phase-Correlation and "Hungarian" similarity mathiching</li>
+<li>Analyse Strom tracks using an adopted tracking verion of TINT (TINT is not TITAN)</li>
+<li>TINT -&gt; Tracking with Phase-Correlation and "Hungarian" similarity mathiching</li>
 </ul>
 
 </div>
@@ -12218,7 +12352,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[238]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s1">&#39;medians.pkl&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
@@ -12309,21 +12443,37 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 </div>
 
-</div></div></section><section>
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Storm-Intensities">Storm Intensities<a class="anchor-link" href="#Storm-Intensities">&#182;</a></h2>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <figure>
-<img src="Fig_020.png" alt="Study area" style='height: 500px;'/>
+<img src="Fig_020.png" alt="Study area" style='height: 450px;'/>
 <figcaption  style="text-align: right">Distribution of Storm Percentiles</figcaption>
 </figure>
 </div>
 </div>
-</div></section></section><section><section>
+</div></section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="The-strongest-Stormes-(&gt;9th-decile)">The strongest Stormes (&gt;9th decile)<a class="anchor-link" href="#The-strongest-Stormes-(&gt;9th-decile)">&#182;</a></h3>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[245]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">f</span> <span class="o">=</span>  <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;../slides/d3plot_map.dmp&#39;</span><span class="p">,</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
@@ -12403,7 +12553,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <figure>
-<figcaption  style="text-align: right">Strongest Storms</figcaption>
+<figcaption  style="text-align: right">TINT Strom Tracks</figcaption>
 </figure>
 </div>
 </div>
@@ -12412,26 +12562,13 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Storm-Life-Cylces">Storm Life-Cylces<a class="anchor-link" href="#Storm-Life-Cylces">&#182;</a></h3>
+<h3 id="Storm-Properties-by-Intensity">Storm Properties by Intensity<a class="anchor-link" href="#Storm-Properties-by-Intensity">&#182;</a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[248]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cycles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s1">&#39;storm_cycle.pkl&#39;</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[310]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -12519,7 +12656,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 
 
 <div class="output_html rendered_html output_subarea ">
-<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/192.embed" height="600px" width="700px"></iframe>
+<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/336.embed" height="600px" width="700px"></iframe>
 </div>
 
 </div>
@@ -12527,41 +12664,128 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 </div>
 
+</div></section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<figure>
+<img src="Fig_019.png" alt="Study area"  style="height:600px;"/>
+<figcaption  style="text-align: right">Comparison Storm Properties by Rainfall Quintiles</figcaption>
+</figure>
+</div>
+</div>
 </div></section></section><section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="The-State-of-the-Atmosphere">The State of the Atmosphere<a class="anchor-link" href="#The-State-of-the-Atmosphere">&#182;</a></h3>
+<h3 id="Why-are-Storms-more-intense-in-the-Sub-km-version?">Why are Storms more intense in the Sub-km version?<a class="anchor-link" href="#Why-are-Storms-more-intense-in-the-Sub-km-version?">&#182;</a></h3>
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Investigation of Cold-Pools</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">HTML</span>
+&lt;figure&gt;
+&lt;video width=&quot;500&quot; loop=&quot;true&quot; controls&gt;
+  &lt;source src=&#39;ColdPool-Ens-1.mp4&#39; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+ &lt;figcaption  style=&quot;text-align: right&quot;&gt;Tracking with Density Potential Temperature Field Pertubation&lt;/figcaption&gt;
+&lt;/figure&gt;
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<figure>
+<video width="500" loop="true" controls>
+  <source src='ColdPool-Ens-1.mp4' type="video/mp4">
+</video>
+ <figcaption  style="text-align: right">Tracking with Density Potential Temperature Field Pertubation</figcaption>
+</figure>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div></div></section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<figure>
+<img src="Fig_038.png" alt="Study area" style="height:600px;"/>
+<figcaption  style="text-align: right">Comparison Cold-Pool Properties and Mass Flux by Rainfall Quintiles</figcaption>
+</figure>
 </div>
 </div>
 </div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>The State of the Atmosphere</li>
+</ul>
+
+</div>
+</div>
+</div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[465]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-<span class="n">X_plot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Min</span><span class="p">,</span> <span class="n">Max</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
 
 <span class="n">variables</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">omega</span><span class="o">=</span><span class="p">((</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">omega&#39;}$ [m/s]&quot;</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">9.5e-2</span><span class="p">,</span> <span class="mf">8.5e-1</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> 
                <span class="n">mflux</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">overline{</span><span class="se">\\</span><span class="s2">omega&#39; q&#39;}$ [m g/kg s]&quot;</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.2e-1</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">),</span> <span class="mi">1000</span><span class="p">))</span><span class="c1">#</span>
 <span class="n">nrow</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">fontsize</span> <span class="o">=</span> <span class="mi">18</span>
 <span class="n">y_axis_layout</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span> <span class="n">showgrid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">showline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">showticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span> <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> 
+                    <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="p">),</span> <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> 
                     <span class="n">zeroline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
 <span class="n">x_axis_layout</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span> <span class="n">showgrid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">showline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">showticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> <span class="n">zeroline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+                    <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> <span class="n">zeroline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">layout_dict</span> <span class="ow">in</span> <span class="p">(</span><span class="n">x_axis_layout</span><span class="p">,</span> <span class="n">y_axis_layout</span><span class="p">):</span>
-    <span class="n">layout_dict</span><span class="p">[</span><span class="s1">&#39;tickfont&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">layout_dict</span><span class="p">[</span><span class="s1">&#39;tickfont&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">layout_dict</span><span class="p">[</span><span class="s1">&#39;automargin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     
 <span class="n">xaxis</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">yaxis</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">nplot</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">nquint</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">hspace</span><span class="p">,</span> <span class="n">vspace</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span>
+<span class="n">hspace</span><span class="p">,</span> <span class="n">vspace</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.15</span>
 <span class="n">titles</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;#1f77b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff7f0e&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">nvar</span><span class="p">,</span> <span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
@@ -12587,7 +12811,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
                 <span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="n">showlegend</span> <span class="o">=</span> <span class="n">showlegend</span><span class="p">,</span>
                 <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
-                <span class="n">line</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">nrun</span><span class="p">],</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">nrun</span><span class="p">],</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
         <span class="n">yaxis</span><span class="p">[</span><span class="s1">&#39;yaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">y_axis_layout</span><span class="p">)</span>
@@ -12604,7 +12828,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
             <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrange</span>
             <span class="n">sp</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">nquint</span><span class="p">,</span> <span class="n">hspace</span><span class="p">)[</span><span class="n">nn</span><span class="p">]</span>
             <span class="n">titles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="n">xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="p">((</span><span class="n">xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">20</span><span class="p">),</span>
-                               <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">y</span><span class="o">=</span><span class="n">split</span><span class="p">(</span><span class="n">nquint</span><span class="p">,</span> <span class="n">vspace</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">vspace</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span>
                                <span class="n">showarrow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Quintile </span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="k">quint</span>,
                                <span class="n">xref</span><span class="o">=</span><span class="s1">&#39;x</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">),</span>
@@ -12612,13 +12836,13 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
         <span class="n">nplot</span> <span class="o">+=</span> <span class="mi">1</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
-    <span class="n">width</span><span class="o">=</span><span class="mi">700</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span>
     <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
     <span class="n">annotations</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
     <span class="n">autosize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span>
     <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;rgb(229,229,229)&#39;</span><span class="p">,</span>
-    <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;serif&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#7f7f7f&#39;</span><span class="p">)</span>
+    <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;serif&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#7f7f7f&#39;</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">axlayout</span> <span class="ow">in</span> <span class="n">yaxis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">layout</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">axlayout</span>
@@ -12666,7 +12890,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 
 
 <div class="output_html rendered_html output_subarea ">
-<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/282.embed" height="800px" width="700px"></iframe>
+<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/338.embed" height="800px" width="750px"></iframe>
 </div>
 
 </div>
@@ -12674,29 +12898,208 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 </div>
 
-</div></section><section>
+</div></div></section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="The-State-of-the-Atmosphere">The State of the Atmosphere<a class="anchor-link" href="#The-State-of-the-Atmosphere">&#182;</a></h3>
+<ul>
+<li>The State of the Atmosphere</li>
+</ul>
+
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<figure>
-<img src="Fig_028.png" alt="Study area" style="height:600px;"/>
-<figcaption  style="text-align: right">Before and During the Storm</figcaption>
-</figure>
-</div>
-</div>
-</div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[313]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+
+
+<span class="n">variables</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">mse_pre</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;$\overline{s_{v_</span><span class="si">{l}</span><span class="s2">}&#39;}/c_{p_</span><span class="si">{d}</span><span class="s2">}$ [K]&quot;</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.4</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> 
+               <span class="n">cloud_pl_rain</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;$\overline{q_l&#39;}$ [g/kg]&quot;</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="c1">#</span>
+<span class="n">nrow</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+<span class="n">fontsize</span> <span class="o">=</span> <span class="mi">18</span>
+<span class="n">y_axis_layout</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span> <span class="n">showgrid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">showline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">showticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span> <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> 
+                    <span class="n">zeroline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="n">P</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">x_axis_layout</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span> <span class="n">showgrid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">showline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">showticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">tickcolor</span><span class="o">=</span><span class="s1">&#39;rgb(127,127,127)&#39;</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">&#39;outside&#39;</span><span class="p">,</span> <span class="n">zeroline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                    <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">layout_dict</span> <span class="ow">in</span> <span class="p">(</span><span class="n">x_axis_layout</span><span class="p">,</span> <span class="n">y_axis_layout</span><span class="p">):</span>
+    <span class="n">layout_dict</span><span class="p">[</span><span class="s1">&#39;tickfont&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">layout_dict</span><span class="p">[</span><span class="s1">&#39;automargin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+<span class="n">xaxis</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">yaxis</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">nplot</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nquint</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">hspace</span><span class="p">,</span> <span class="n">vspace</span> <span class="o">=</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.15</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;#1f77b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff7f0e&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">nvar</span><span class="p">,</span> <span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">nrow</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">varn</span><span class="p">,</span> <span class="n">xrange</span><span class="p">,</span> <span class="n">mul</span> <span class="o">=</span> <span class="n">prop</span>
+    <span class="k">for</span> <span class="n">nn</span><span class="p">,</span> <span class="n">quint</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nquint</span><span class="o">+</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">nrun</span><span class="p">,</span> <span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">flx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fluxes</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">flx</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">quint</span><span class="p">]</span> <span class="o">*</span> <span class="n">mul</span>
+            <span class="k">if</span> <span class="n">nrow</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+                <span class="n">yname</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yname</span> <span class="o">=</span> <span class="s1">&#39;y</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nrow</span><span class="o">*</span><span class="n">nquint</span><span class="o">-</span><span class="n">nquint</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nplot</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;during&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">run</span>
+            <span class="n">trace</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">P</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">xaxis</span><span class="o">=</span><span class="s1">&#39;x</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">),</span>
+                <span class="n">yaxis</span><span class="o">=</span> <span class="n">yname</span><span class="p">,</span>
+                <span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">showlegend</span> <span class="o">=</span> <span class="n">showlegend</span><span class="p">,</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">nrun</span><span class="p">],</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">quint</span><span class="p">,</span> <span class="n">run</span><span class="p">)]</span> <span class="o">=</span> <span class="n">trace</span>
+        <span class="n">yaxis</span><span class="p">[</span><span class="s1">&#39;yaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">y_axis_layout</span><span class="p">)</span>
+        <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">x_axis_layout</span><span class="p">)</span>
+        <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">varn</span>
+        <span class="n">yaxis</span><span class="p">[</span><span class="s1">&#39;yaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">),</span> <span class="n">vspace</span><span class="p">)[</span><span class="n">nrow</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">nquint</span><span class="p">,</span> <span class="n">hspace</span><span class="p">)[</span><span class="n">nn</span><span class="p">]</span>
+        <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;anchor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yname</span>
+        <span class="n">yaxis</span><span class="p">[</span><span class="s1">&#39;yaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;anchor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;x</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="k">nplot</span>
+        <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrange</span>
+        <span class="k">if</span> <span class="n">quint</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">yaxis</span><span class="p">[</span><span class="s1">&#39;yaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;Pressure [hPa]&#39;</span>
+        <span class="k">if</span> <span class="n">nrow</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">xaxis</span><span class="p">[</span><span class="s1">&#39;xaxis</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">)][</span><span class="s1">&#39;range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrange</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">nquint</span><span class="p">,</span> <span class="n">hspace</span><span class="p">)[</span><span class="n">nn</span><span class="p">]</span>
+            <span class="n">titles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span>
+                               <span class="n">y</span><span class="o">=</span><span class="n">split</span><span class="p">(</span><span class="n">nquint</span><span class="p">,</span> <span class="n">vspace</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">vspace</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span>
+                               <span class="n">showarrow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Quintile </span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="k">quint</span>,
+                               <span class="n">xref</span><span class="o">=</span><span class="s1">&#39;x</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nplot</span><span class="p">),</span>
+                               <span class="n">yref</span><span class="o">=</span><span class="s1">&#39;paper&#39;</span><span class="p">))</span>
+        <span class="n">nplot</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">quint</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nquint</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;UM 1.33km&#39;</span><span class="p">,</span> <span class="s1">&#39;UM 0.44km&#39;</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">fluxes</span><span class="p">[</span><span class="n">run</span><span class="p">][</span><span class="s1">&#39;cloud_pl_pre&#39;</span><span class="p">][</span><span class="n">quint</span><span class="p">]</span>
+        <span class="n">key1</span> <span class="o">=</span> <span class="s1">&#39;cloud_pl_rain_</span><span class="si">%i</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">quint</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+        <span class="n">key2</span> <span class="o">=</span> <span class="s1">&#39;cloud_pl_pre_</span><span class="si">%i</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">quint</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+        <span class="n">new_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key1</span><span class="p">])</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;before&#39;</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;showlegend&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">key2</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_data</span>
+
+<span class="k">for</span> <span class="n">quint</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nquint</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;UM 1.33km&#39;</span><span class="p">,</span> <span class="s1">&#39;UM 0.44km&#39;</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">fluxes</span><span class="p">[</span><span class="n">run</span><span class="p">][</span><span class="s1">&#39;cloud_pl_pre&#39;</span><span class="p">][</span><span class="n">quint</span><span class="p">]</span>
+        <span class="n">key1</span> <span class="o">=</span> <span class="s1">&#39;cloud_pl_rain_</span><span class="si">%i</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">quint</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+        <span class="n">key2</span> <span class="o">=</span> <span class="s1">&#39;cloud_pl_prep_</span><span class="si">%i</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">quint</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+        <span class="n">new_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key1</span><span class="p">])</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;dash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;dash&#39;</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;before&#39;</span>
+        <span class="n">new_data</span><span class="p">[</span><span class="s1">&#39;showlegend&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">key2</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_data</span>
+        
+
+<span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">annotations</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">autosize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;rgb(255,255,255)&#39;</span><span class="p">,</span>
+    <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;rgb(229,229,229)&#39;</span><span class="p">,</span>
+    <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;serif&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#7f7f7f&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">axlayout</span> <span class="ow">in</span> <span class="n">yaxis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">layout</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">axlayout</span>
+<span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">axlayout</span> <span class="ow">in</span> <span class="n">xaxis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">layout</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">axlayout</span>
+<span class="n">steps</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">Labels</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Druing&#39;</span><span class="p">,</span> <span class="s1">&#39;Before&#39;</span><span class="p">,</span> <span class="s1">&#39;Before+During&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;restyle&#39;</span><span class="p">,</span>  
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)],</span><span class="c1"># &#39;showlegend&#39;, [False] * len(data)],</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">Labels</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="n">step</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">step</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">*</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="c1"># Toggle i&#39;th trace to &quot;visible&quot;</span>
+        <span class="c1">#step[&#39;args&#39;][1][-10:] = 10*[False] # Toggle i&#39;th trace to &quot;visible&quot;</span>
+    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">step</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">20</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">20</span><span class="o">*</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="c1"># Toggle i&#39;th trace to &quot;visible&quot;</span>
+    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">step</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">*</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="c1"># Toggle i&#39;th trace to &quot;visible&quot;</span>
+        <span class="c1">#step[&#39;args&#39;][-1][3] = [True]</span>
+        <span class="c1">#step[&#39;args&#39;][-1][-1] = [True]</span>
+        
+    <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+
+<span class="n">sliders</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span>
+    <span class="n">active</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">currentvalue</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;State: &quot;</span><span class="p">},</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">},</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span><span class="p">,</span>
+    <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+<span class="p">)]</span>
+<span class="n">layout</span><span class="p">[</span><span class="s1">&#39;sliders&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sliders</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">show_link</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/340.embed" height="800px" width="750px"></iframe>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Also somthing in the Boundary Layer</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">norm</span>
@@ -12791,7 +13194,7 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 
 
 <div class="output_html rendered_html output_subarea ">
-<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/196.embed" height="600px" width="700px"></iframe>
+<iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless" src="https://plot.ly/~antarcticrainforest/342.embed" height="600px" width="700px"></iframe>
 </div>
 
 </div>
@@ -12799,16 +13202,50 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
 </div>
 </div>
 
-</div>
+</div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[258]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span>np.random.normal<span class="o">?</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">HTML</span>
+&lt;figure&gt;
+&lt;video width=&quot;750&quot; height=&quot;400&quot; loop=&quot;true&quot; controls&gt;
+  &lt;source src=&#39;ColdPool_nativ_2.mp4&#39; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+ &lt;figcaption  style=&quot;text-align: right&quot;&gt;Cold-Pool (center) and Rainfall (outer) for two ensemble member&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;img src=&quot;Diagram1.png&quot; alt=&quot;Study area&quot; style=&quot;height:200px;&quot;/&gt;
+&lt;p&gt;One possible problem: Micro-Phys. depends on RH&lt;sub&gt;crit&lt;/sub&gt; that is chosen on 80!! levels&lt;/p&gt;
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<figure>
+<video width="750" height="400" loop="true" controls>
+  <source src='ColdPool_nativ_2.mp4' type="video/mp4">
+</video>
+ <figcaption  style="text-align: right">Cold-Pool (center) and Rainfall (outer) for two ensemble member</figcaption>
+</figure>
+<img src="Diagram1.png" alt="Study area" style="height:200px;"/>
+<p>One possible problem: Micro-Phys. depends on RH<sub>crit</sub> that is chosen on 80!! levels</p>
+</div>
+
+</div>
+
 </div>
 </div>
 
