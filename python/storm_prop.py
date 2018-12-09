@@ -6,6 +6,7 @@ import numpy as np
 from netCDF4 import date2num
 import xarray as xr
 
+np.warnings.filterwarnings('ignore')
 
 def calc_thetap(T, p, q, rr):
     p0 = 1000.
@@ -580,12 +581,34 @@ def mse_bar(files, loc, **kwargs):
     f.close(), g.close(), z.close(), v.close(), pf.close()
     return np.nanmean(H, axis=(-2, -1)).reshape(-1, 1, 1), lats, lons, np.array(time[0])
 
+def z(files, loc, **kwags):
+    z = xr.open_dataset(files['surf'])
+    tidx, loci, locj = loc #Index
+    tidx -= 1
+    v = xr.open_dataset(files['vert_cent'])
+    P = v['p'][:].values * 100
+    T = v['temp'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    Z = calc_z(z['p'][tidx, :, loci[0]:loci[1], locj[0]:locj[1]].values,
+               P.reshape(-1,1,1), T)
+    try:
+        lons = v['lon'][locj[0]:locj[1]].values
+        lats = v['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = v['longitude'][locj[0]:locj[1]].values
+        lats = v['latitude'][loci[0]:loci[1]].values
 
+    time = date2num(pd.DatetimeIndex(v['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    v.close(), z.close()
+    return Z, lats, lons, np.array(time[0])
 
 def mse(files, loc, **kwargs):
     '''Calculate entrainment rate'''
     from model2lev import interp
-
+    try:
+        perturb = kwargs['perturb'].lower() == 'true'
+    except:
+        perturb = True
     cpd = 1005.7
     Lv = 2.51e6
     Lf = 2.83e6
@@ -619,7 +642,10 @@ def mse(files, loc, **kwargs):
     sli = cpd*Tv + 9.81*Z - Lv*(QL) #- Lf*QI
     qt = (q+QL)
     sv = sli - 0.61*cpd*T[0]*qt
-    sv = sv[:,loci[0]:loci[1],locj[0]:locj[1]] - sv.mean(axis=(-2,-1)).reshape(-1, 1, 1)
+    if perturb:
+        sv = sv[:,loci[0]:loci[1],locj[0]:locj[1]] -  sv.mean(axis=(-2,-1)).reshape(-1, 1, 1)
+    else:
+        sv = sv[:,loci[0]:loci[1],locj[0]:locj[1]]
     try:
         lons = f['lon'][locj[0]:locj[1]].values
         lats = f['lat'][loci[0]:loci[1]].values

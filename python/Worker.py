@@ -155,7 +155,6 @@ def get_storm_prop(expID, thread, **kwargs):
             ncfiles[res][v] = ncf
 
     outF = os.path.join(basedir,'Storm_prop-2006%sZ.hdf5'%expID.strip('u-'))
-
     with File(outF, 'a') as h5:
 
         for res, trackf in track_prop.items():
