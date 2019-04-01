@@ -49,6 +49,16 @@ def calc_rho(q, T, p):
     rho = pd/(Rd*T) + pv/(Rv*T)
     return rho
 
+def calc_rh(q, T, p):
+ 
+    es = 6.112 * np.exp( (17.62 * (T - 273.15)) / (243.12 - (T - 273.15)))
+    s = 0.622 * es / p
+    #s[s==0] = 1e-6
+    rh = q / s
+    rh[rh<0] = 0
+    rh[rh>1] = 1
+    return rh
+
 def calc_z(p0, p, T):
     
     return (((p0/p)**(1/5.257) - 1) * T) / 0.0065
@@ -737,5 +747,36 @@ def bflux(files, loc, **kwargs):
     f.close()
     g.close()
     return blx, lats, lons, np.array([time[0]])
-    
+
+def wet_bulb(files, loc, **kwargs):
+    try:
+        tdelta = int(kwargs['tdelta'])
+    except KeyError:
+        tdelta = 1
+
+    f = xr.open_dataset(files['vert_cent'])
+    tidx, loci, locj = loc #Index
+    tidx -= 2
+    #Get the time windox from timedelta (tdelta in hours)
+    time = pd.DatetimeIndex(f['t'][:].values)
+
+    P = f.variables['p'][:].values
+    q = f.variables['q'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    T = f.variables['temp'][tidx].values#, :, loci[0]:loci[1], locj[0]:locj[1]].values
+    rh = calc_rh(q, T, P.reshape(-1, 1, 1)) * 100
+    T = T - 273.15
+    wetb = T - (-5.806+0.672*T-0.006*T*T+(0.061+0.004*T+0.000099*T*T)*rh+(-0.000033-0.000005*T-0.0000001*T*T)*rh*rh)
+    wetb = wetb[:,loci[0]:loci[1],locj[0]:locj[1]] - wetb.mean(axis=(-2, -1)).reshape(-1, 1, 1)
+    try:
+        lons = f['lon'][locj[0]:locj[1]].values
+        lats = f['lat'][loci[0]:loci[1]].values
+    except KeyError:
+        lons = f['longitude'][locj[0]:locj[1]].values
+        lats = f['latitude'][loci[0]:loci[1]].values
+
+    time = date2num(pd.DatetimeIndex(f['t'][tidx:tidx+1].values).to_pydatetime(),
+                    'seconds since 1970-01-01 00:00:00')
+    f.close()
+    return wetb, lats, lons, np.array([time[0]])
+
 

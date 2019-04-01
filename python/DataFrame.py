@@ -217,14 +217,19 @@ def get_rainIndex(df, lon, lat, time, method='center'):
 
     if method.lower() == 'center' or method.lower() == 'centre':
         idx = df.index[len(df) // 2]
+        tidx = df.index[len(df) // 2]
 
     elif method.lower() == 'mean' or method.lower() == 'max':
         idx = df[method.lower()].idxmax()
+        tidx = df[method.lower()].idxmax()
     elif method.lower() == 'min':
-        idx = df.index[0]
+        idx = df['mean'].idxmax()
+        tidx = idx
+        #tidx = df.index[0]
     else:
         log.warning('Method not implemented falling back to center')
         idx = df.index[len(df) // 2]
+        tidx = df.index[len(df) // 2]
     try:
         s_lon = np.fabs(lon.values - df.loc[idx]['lon']).argmin()
         s_lat = np.fabs(lat.values - df.loc[idx]['lat']).argmin()
@@ -234,7 +239,7 @@ def get_rainIndex(df, lon, lat, time, method='center'):
 
     radius = df.loc[idx]['area'] // 2
 
-    T = (time - df.loc[idx].time).total_seconds()
+    T = (time - df.loc[tidx].time).total_seconds()
     lons = (max(0, s_lon - radius), min(s_lon + radius, len(lon)))
     lats = (max(0, s_lat - radius), min(s_lat + radius, len(lat)))
 
