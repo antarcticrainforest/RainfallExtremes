@@ -1,3 +1,7 @@
+import warnings
+warnings.simplefilter("ignore")
+from argparse import ArgumentParser
+
 from tint import Cell_tracks, animate, helpers
 import os
 import pandas as pd
@@ -7,7 +11,7 @@ from netCDF4 import Dataset as nc, num2date, date2num
 from datetime import datetime, timedelta
 import sys
 from storm_prop import calc_thetae, calc_thetap
-
+warnings.simplefilter('default')
 
 
 def cold_pool_grids(group, rain, slices, lon, lat,
@@ -42,7 +46,7 @@ def cold_pool_grids(group, rain, slices, lon, lat,
         out['data'] = (np.ma.masked_less(-ary,thresh)*0 + 1) * (thetae.mean() - thetae)
         yield out
 
-def creat_tracks(dataF,
+def create_tracks(dataF,
                  start=None,
                  end=None,
                  overwrite=True,
@@ -75,14 +79,12 @@ def creat_tracks(dataF,
         lonname : Name of the longitude variable
         latname : Name of the latitude variable
         group : Subgroup where the data is stored
+        trackdir : Directory where the output is saved to
     '''
-
-    trackdir = os.path.join(os.path.dirname(dataF), 'Tracking')
+    
+    trackdir = kwargs.get('trackdir') or os.path.join(os.path.dirname(dataF), 'Tracking')
     sys.stdout.write('Creating tracks for %s\n' % dataF)
-    try:
-        os.makedirs(os.path.join(trackdir, 'video'))
-    except:
-        pass
+    os.makedirs(os.path.join(trackdir, 'video'), exist_ok=True)
 
     try:
         out_name = kwargs['out_name']
@@ -100,7 +102,11 @@ def creat_tracks(dataF,
             g = ncf[group]
         else:
             g = ncf
-
+        try:
+            tvar = g.variables[timename]
+        except KeyError:
+            timename = 'time'
+            tvar = g.variables[timename]
         if type(start) == type('a') and type(end) == type('a'):
             slices = helpers.set_times(start, end, g.variables[timename])
         else:
@@ -140,12 +146,13 @@ def creat_tracks(dataF,
             tracks_obj = Cell_tracks()
             tracks_obj.params['MIN_SIZE'] = 4
             tracks_obj.params['FIELD_THRESH'] = 0.001
-            track_file = os.path.join(trackdir, 'tint_tracks_%s.hdf5' % (suffix))
+            track_file = os.path.join(trackdir, 'tint_tracks_%s.pkl' % (suffix))
             if not os.path.isfile(track_file) or overwrite:
                 ncells = tracks_obj.get_tracks(gr, (x, y))
                 if ncells > 2:
-                    tracks_obj.tracks.to_hdf(track_file, varname, mode='a',
-                                              format='table')
+                    tracks_obj.tracks.to_pickle(track_file)
+                    #tracks_obj.tracks.to_hdf(track_file, varname, mode='a',
+                    #                          format='table')
                     ani = True
                 else:
                     ani = False
@@ -166,14 +173,17 @@ def creat_tracks(dataF,
             # break
 
 
-def get_mintime(ensembles, Simend, UMdir, vn='rain'):
+def get_mintime(ensembles, Simend, UMdir, vn='rain', year=2006):
     ''' Construct the filenames of the UM -
         rainfall ouput and get the overlapping time periods
     '''
     start, end = [], []
     data_files = []
     for ens in ensembles:
-        date = datetime.strptime(ens, '%Y%m%dT%H%MZ')
+        try:
+            date = datetime.strptime(ens, '%Y%m%dT%H%MZ')
+        except ValueError:
+            date = datetime.strptime(f'{year}-{ens}', '%Y-u-%m%d%H%M')
         umf133 = 'um-1p33km-%s-%s_%s-%s.nc' % (date.strftime(
             '%m%d%H%M'), vn, date.strftime('%Y%m%d_%H%M'), Simend)
         umf044 = 'um-0p44km-%s-%s_%s-%s.nc' % (date.strftime(
@@ -181,18 +191,28 @@ def get_mintime(ensembles, Simend, UMdir, vn='rain'):
 
         data_files.append((os.path.join(UMdir, umf133),
                            os.path.join(UMdir, umf044)))
-        time133 = nc(os.path.join(UMdir, umf133)).variables['t']
-        time044 = nc(os.path.join(UMdir, umf044)).variables['t']
-        start.append((num2date(time133[:], time133.units)[
-                     0], num2date(time044[:], time044.units)[-1]))
-        end.append((num2date(time133[:], time133.units)
-                    [-1], num2date(time044[:], time044.units)[-1]))
-    return data_files,\
+        with nc(os.path.join(UMdir, umf133)) as f:
+            try:
+                t_var = f.variables['t']
+            except KeyError:
+                t_var = f.variables['time']
+            time133 = num2date(t_var[:], t_var.units)
+        with nc(os.path.join(UMdir, umf044)) as f:
+            try:
+                t_var = f.variables['t']
+            except KeyError:
+                t_var = f.variables['time']
+            time044 = num2date(t_var[:], t_var.units)
+
+        start.append((time133[0], time044[0]))
+        end.append((time133[1], time044[-1]))
+        return data_files,\
         np.max(np.array(start), axis=0).min(),\
         np.min(np.array(end), axis=0).max()
 
 
 if __name__ == '__main__':
+
     dataF = os.path.join(os.getenv("HOME"), 'Data',
                          'Extremes', 'CPOL', 'CPOL_TIWI_1998-2017-old.nc')
     overwrite = True
@@ -206,12 +226,14 @@ if __name__ == '__main__':
     remap_res = '2.5km'
     animate_movie = True
     Simend = '20061119_0600-%s' % remap_res
-    umfiles, start, end = get_mintime(ensembles, Simend)
+    umfiles, start, end = get_mintime(ensembles, Simend, UMdir)
     start, end = datetime(1998, 12, 6, 0, 0), datetime(2008, 3, 10, 0, 0)
     #creat_tracks(dataF, start, end, latname='latitude', timename='t',
     #             lonname='longitude', keep_frames=True, animate_movie=animate_movie)
     #sys.exit()
     for umf133, umf044 in umfiles:
         for fname in (umf133, umf044):
-            creat_tracks(fname, start, end, latname='lat',
-                         lonname='lon', keep_frames=True, animate_movie=animate_movie)
+            print(fname)
+            #create_tracks(fname, start, end, latname='lat',
+            #             lonname='lon', keep_frames=True, animate_movie=animate_movie)
+            break
