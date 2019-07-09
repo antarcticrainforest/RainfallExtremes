@@ -6,6 +6,7 @@ from glob import glob
 import importlib
 from itertools import product
 import os
+import os.path as op
 import random
 import re
 import sys
@@ -109,10 +110,49 @@ def get_cloud_top(expID, thread, **kwargs):
     return 0
 
 
+def get_storm_tracks(expID, thread, **kwargs):
+    """
+    Create storm tracks for a given ensemble member.
+
+    Prameters
+    ---------
+    expID : (str)
+        Name of the ensemble member
+
+    thread : (str)
+        Multiprocessing thread name
+
+    Keywords
+    --------
+    additional keyword arguments
+    """
+    warnings.simplefilter('ignore')
+    from TintTrack import create_tracks, get_mintime
+
+    animate_movie = bool(kwargs.get('animate_movie')) or False
+    remap_res = kwargs.get('remap_res') or '2.5km'
+    sim_end = kwargs.get('sim_end') or f'20061119_0600-{remap_res}'
+    year = kwargs.get('year') or 2006
+    base_dir = op.expanduser(kwargs.get('base_dir')) or \
+               op.join(os.environ['HOME'], 'Data', 'Extremes', 'UM', 
+                       'darwin', 'RA1T')
+    umfiles, start, end = get_mintime((expID,), sim_end, base_dir,
+                                      year=int(year))
+    expDir = datetime.strptime(expID, 'u-%m%d%H%M').strftime('2006%m%dT%H%MZ')
+    um133_trackf = os.path.join(base_dir, expDir, 'darwin', '1p33km', 'Tracking')
+    um044_trackf = os.path.join(base_dir, expDir, 'darwin', '0p44km', 'Tracking')
+    for umf133, umf044 in umfiles:
+        for fname, track_dir in ((umf133, um133_trackf), 
+                                 (umf044, um044_trackf)):
+            create_tracks(fname, start, end, latname='lat', lonname='lon',
+                          keep_frames=True, animate_movie=animate_movie, 
+                          trackdir=track_dir)
+    return 0
+
 
 def get_storm_prop(expID, thread, **kwargs):
     '''
-    Calculate properties
+    Calculate storm properties
     '''
 
     try:
@@ -131,7 +171,7 @@ def get_storm_prop(expID, thread, **kwargs):
     func = getattr(storm_prop, funcn)
     #Get the treck data first
     try:
-        basedir = os.path.expanduser(kwargs['basedir'])
+        basedir = os.path.expanduser(kwargs['base_dir'])
     except KeyError:
         basedir = os.path.expanduser('~/Data/Extremes/UM/darwin/RA1T')
 
